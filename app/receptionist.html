@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receptionist Portal - SmartClinics AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .receptionist-grid { display: grid; grid-template-columns: 380px 1fr; gap: 1.5rem; height: calc(100vh - 70px); }
+        .queue-panel { background: white; border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+        .queue-header { padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .queue-header h3 { margin: 0; font-size: 1rem; }
+        .queue-list { flex: 1; overflow-y: auto; }
+        .queue-item { padding: 1rem 1.5rem; border-bottom: 1px solid var(--bg-light); cursor: pointer; transition: var(--transition); display: flex; align-items: center; justify-content: space-between; }
+        .queue-item:hover, .queue-item.selected { background: var(--primary-bg); }
+        .queue-item-name { font-weight: 600; font-size: 0.95rem; color: var(--secondary); }
+        .queue-item-meta { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+        .queue-item-right { text-align: right; }
+        .queue-item-time { font-size: 0.8rem; font-weight: 700; color: var(--primary); }
+        .queue-status { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+        .qs-here { background: #2ecc71; animation: pulse 1.5s infinite; }
+        .qs-waiting { background: var(--warning); }
+        .qs-called { background: var(--primary-decorative); }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(46,204,113,0.4); } 70% { box-shadow: 0 0 0 6px rgba(46,204,113,0); } 100% { box-shadow: 0 0 0 0 rgba(46,204,113,0); } }
+        .workspace-panel { padding: 1.5rem; overflow-y: auto; }
+        .patient-overview { background: white; border-radius: var(--radius-md); padding: 2rem; border: 1px solid var(--border); margin-bottom: 1.5rem; }
+        .patient-card-header { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem; }
+        .patient-big-avatar { width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 800; color: white; flex-shrink: 0; }
+        .patient-details-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+        .detail-box { padding: 0.8rem; background: var(--bg-light); border-radius: var(--radius-sm); }
+        .detail-box label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); display: block; margin-bottom: 3px; }
+        .detail-box span { font-weight: 600; font-size: 0.9rem; color: var(--secondary); }
+        .action-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+        .action-btn-big { background: white; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1.5rem; text-align: center; cursor: pointer; transition: var(--transition); }
+        .action-btn-big:hover { border-color: var(--primary); background: var(--primary-bg); }
+        .action-btn-big i { font-size: 2rem; margin-bottom: 0.5rem; display: block; }
+        .action-btn-big span { font-size: 0.85rem; font-weight: 600; color: var(--secondary); }
+        .sms-form { background: white; border-radius: var(--radius-md); padding: 1.5rem; border: 1px solid var(--border); margin-bottom: 1.5rem; }
+        .sms-form h3 { margin: 0 0 1rem 0; font-size: 1rem; }
+        .sms-templates { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+        .sms-template-btn { padding: 0.4rem 0.8rem; border-radius: var(--radius-pill); font-size: 0.8rem; font-weight: 600; border: 1px solid var(--border); background: white; cursor: pointer; transition: var(--transition); }
+        .sms-template-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+        .sms-body { width: 100%; padding: 0.8rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 0.9rem; resize: vertical; min-height: 80px; }
+        .sms-body:focus { border-color: var(--primary); outline: none; }
+        .modal-overlay { position: fixed; top:0;left:0;right:0;bottom:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); display:none; align-items:center; justify-content:center; z-index:1000; opacity:0; transition:opacity 0.3s; }
+        .modal-content { background:white; width:100%; max-width:500px; border-radius:var(--radius-md); padding:2rem; box-shadow:0 20px 40px rgba(0,0,0,0.2); transform:translateY(20px); transition:transform 0.3s; }
+        .modal-content.active { transform:translateY(0); }
+        .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; }
+        .modal-header h3 { margin:0; }
+        .close-modal { background:none; border:none; cursor:pointer; font-size:1.2rem; color:var(--text-muted); }
+        .form-group { margin-bottom:1.2rem; }
+        .form-group label { display:block; margin-bottom:0.4rem; font-weight:600; font-size:0.85rem; color:var(--secondary); }
+        .form-control { width:100%; padding:0.7rem 1rem; border:1px solid var(--border); border-radius:var(--radius-sm); font-size:0.95rem; font-family:inherit; }
+        .form-control:focus { border-color:var(--primary); outline:none; }
+        .modal-footer { display:flex; justify-content:flex-end; gap:1rem; margin-top:1.5rem; padding-top:1rem; border-top:1px solid var(--border); }
+        .checkin-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: var(--radius-pill); font-size: 0.8rem; font-weight: 700; }
+        .cb-here { background: rgba(46,204,113,0.15); color: #1A7035; }
+        .cb-waiting { background: rgba(184,134,11,0.1); color: #7A5800; }
+        .cb-called { background: rgba(21,88,176,0.1); color: var(--primary); }
+
+        /* ── Receptionist Responsive ── */
+        @media (max-width: 900px) {
+            .recep-container {
+                height: auto !important;
+                overflow-y: auto !important;
+                min-height: 100dvh;
+            }
+            #recepHeader {
+                flex-wrap: wrap;
+                height: auto !important;
+                min-height: 56px;
+                padding: 0.6rem 1rem !important;
+                gap: 0.5rem;
+            }
+            #recepHeaderLeft { flex-wrap: wrap; gap: 0.5rem !important; }
+            .recep-portal-link,
+            .recep-divider { display: none; }
+            .recep-title { font-size: 0.95rem !important; }
+            .recep-name  { display: none; }
+            #recepLayout {
+                flex-direction: column !important;
+                overflow: visible !important;
+                flex: none !important;
+                height: auto !important;
+            }
+            .queue-panel {
+                width: 100% !important;
+                flex-shrink: 1 !important;
+                max-height: 300px;
+                border-right: none !important;
+                border-bottom: 1px solid var(--border);
+            }
+            .workspace-panel { padding: 1rem; overflow-y: visible; height: auto; }
+            .patient-card-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+            .patient-card-header > div:last-child { flex-direction: row; width: 100%; gap: 0.5rem; }
+            .patient-card-header > div:last-child .btn { flex: 1; justify-content: center; font-size: 0.8rem; }
+            .action-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 0.75rem !important; }
+            .patient-details-grid { grid-template-columns: repeat(2, 1fr) !important; }
+            .sms-templates { gap: 0.4rem; }
+            .sms-template-btn { font-size: 0.75rem; padding: 0.3rem 0.6rem; }
+        }
+        @media (max-width: 600px) {
+            .queue-panel { max-height: 260px; }
+            .action-btn-big { padding: 1rem 0.5rem; }
+            .action-btn-big i { font-size: 1.5rem; }
+            .patient-details-grid { grid-template-columns: 1fr 1fr !important; }
+        }
+        @media (max-width: 420px) {
+            .action-grid { grid-template-columns: repeat(3, 1fr) !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container recep-container" style="flex-direction:column;">
+        <header id="recepHeader" class="top-header" style="background:var(--secondary);color:white;border:none;padding:0 2rem;">
+            <div id="recepHeaderLeft" style="display:flex;align-items:center;gap:1rem;">
+                <a href="dashboard.html" class="recep-portal-link" style="color:white;opacity:0.7;font-size:0.85rem;"><i class="fas fa-arrow-left"></i> Provider Portal</a>
+                <div class="recep-divider" style="width:1px;height:20px;background:rgba(255,255,255,0.2);"></div>
+                <div class="recep-title" style="font-weight:700;font-size:1.1rem;">
+                    <i class="fas fa-headset" style="color:#2ecc71;margin-right:8px;"></i>Receptionist Station
+                </div>
+                <div style="background:rgba(255,255,255,0.1);padding:4px 12px;border-radius:4px;font-size:0.8rem;">
+                    <div id="clockEl" style="font-family:monospace;font-size:1rem;"></div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:1rem;">
+                <button class="btn" style="background:rgba(255,255,255,0.15);color:white;font-size:0.85rem;" onclick="openCheckinModal()"><i class="fas fa-qrcode"></i> Walk-In Check-In</button>
+                <div class="recep-name" style="font-size:0.9rem;opacity:0.8">Maria Lopez — Receptionist</div>
+            </div>
+        </header>
+
+        <div id="recepLayout" style="display:flex;flex:1;overflow:hidden;">
+            <!-- Queue Panel -->
+            <div class="queue-panel" style="width:380px;flex-shrink:0;">
+                <div class="queue-header">
+                    <h3>Today's Queue <span style="background:var(--danger);color:white;padding:2px 8px;border-radius:10px;font-size:0.75rem;margin-left:6px" id="queueCount">6</span></h3>
+                    <button class="btn btn-outline" style="font-size:0.8rem;padding:0.3rem 0.7rem;" onclick="openCheckinModal()"><i class="fas fa-plus"></i></button>
+                </div>
+                <div class="queue-list" id="queueList"></div>
+            </div>
+
+            <!-- Workspace -->
+            <div class="workspace-panel" style="flex:1;">
+                <div id="noSelection" style="text-align:center;padding:4rem;color:var(--text-muted)">
+                    <i class="fas fa-mouse-pointer" style="font-size:3rem;opacity:0.2;display:block;margin-bottom:1rem;"></i>
+                    <p>Select a patient from the queue to manage their visit</p>
+                </div>
+                <div id="patientWorkspace" style="display:none;">
+                    <!-- Patient Overview -->
+                    <div class="patient-overview">
+                        <div class="patient-card-header">
+                            <div class="patient-big-avatar" id="bigAvatar">MG</div>
+                            <div style="flex:1;">
+                                <div style="display:flex;align-items:center;gap:1rem;margin-bottom:0.5rem;">
+                                    <h2 style="margin:0;font-size:1.5rem;" id="selectedName">Maria Gonzalez</h2>
+                                    <span class="checkin-badge cb-here" id="statusBadge">✓ Checked In</span>
+                                </div>
+                                <div style="font-size:0.9rem;color:var(--text-muted);" id="selectedMeta">ID: PT-8421 • DOB: 05/12/1954 • Spanish (Mexico)</div>
+                                <div style="margin-top:0.5rem;" id="selectedAppt"><span style="font-size:0.85rem;color:var(--primary);font-weight:600"><i class="fas fa-calendar"></i> 9:30 AM — Post-op Followup with Dr. Sarah Chen</span></div>
+                            </div>
+                            <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                                <button class="btn btn-primary" id="startSessionBtn" onclick="startSelectedSession()"><i class="fas fa-phone-volume"></i> Start Translation Session</button>
+                                <button class="btn btn-outline" style="font-size:0.85rem;" onclick="callPatient()"><i class="fas fa-bullhorn"></i> Call to Exam Room</button>
+                            </div>
+                        </div>
+                        <div class="patient-details-grid">
+                            <div class="detail-box"><label>Insurance</label><span id="selInsurance">Medicaid</span></div>
+                            <div class="detail-box"><label>Phone</label><span id="selPhone">(973) 555-0112</span></div>
+                            <div class="detail-box"><label>Wait Time</label><span id="waitTime" style="color:var(--primary)">0 min</span></div>
+                            <div class="detail-box"><label>Check-In Time</label><span id="checkinTime">9:12 AM</span></div>
+                            <div class="detail-box"><label>Assigned Room</label><span id="selRoom">—</span></div>
+                            <div class="detail-box"><label>Copay</label><span id="selCopay">$20.00</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="action-grid">
+                        <div class="action-btn-big" onclick="assignRoom()">
+                            <i class="fas fa-door-open" style="color:var(--primary);"></i>
+                            <span>Assign Room</span>
+                        </div>
+                        <div class="action-btn-big" onclick="collectCopay()">
+                            <i class="fas fa-dollar-sign" style="color:var(--accent-decorative);"></i>
+                            <span>Collect Copay</span>
+                        </div>
+                        <div class="action-btn-big" onclick="sendPatientLink()">
+                            <i class="fas fa-mobile-alt" style="color:#8e44ad;"></i>
+                            <span>Send Patient Link</span>
+                        </div>
+                        <div class="action-btn-big" onclick="viewRecords()">
+                            <i class="fas fa-folder-open" style="color:#e67e22;"></i>
+                            <span>View Records</span>
+                        </div>
+                        <div class="action-btn-big" onclick="bookFollowup()">
+                            <i class="fas fa-calendar-plus" style="color:#16a085;"></i>
+                            <span>Book Follow-Up</span>
+                        </div>
+                        <div class="action-btn-big" onclick="markNoShow()">
+                            <i class="fas fa-user-slash" style="color:var(--danger);"></i>
+                            <span>Mark No-Show</span>
+                        </div>
+                    </div>
+
+                    <!-- SMS Communication -->
+                    <div class="sms-form">
+                        <h3><i class="fas fa-sms" style="color:var(--primary);margin-right:8px;"></i>Send SMS to Patient</h3>
+                        <div class="sms-templates">
+                            <button class="sms-template-btn" onclick="setSMS('Your doctor is ready for you. Please proceed to Exam Room 3.')">Room Ready</button>
+                            <button class="sms-template-btn" onclick="setSMS('Your appointment is running 10 minutes behind. We apologize for the inconvenience.')">Running Late</button>
+                            <button class="sms-template-btn" onclick="setSMS('Your appointment confirmation: Tomorrow at 2:00 PM with Dr. Chen. Reply STOP to cancel.')">Appt Reminder</button>
+                            <button class="sms-template-btn" onclick="setSMS('Your lab results are now available in your patient portal. Please log in to view them.')">Lab Results</button>
+                        </div>
+                        <textarea class="sms-body" id="smsBody" placeholder="Type a message or select a template above..."></textarea>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.8rem;">
+                            <span style="font-size:0.75rem;color:var(--text-muted);">Sending to: <span id="smsRecipient" style="font-weight:600">(973) 555-0112</span></span>
+                            <button class="btn btn-primary" style="font-size:0.85rem;" onclick="sendSMS()"><i class="fas fa-paper-plane"></i> Send SMS</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Walk-In Check-In Modal -->
+    <div class="modal-overlay" id="checkinModal">
+        <div class="modal-content" id="checkinModalContent">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-check" style="color:var(--primary);margin-right:8px;"></i>Walk-In / Check-In</h3>
+                <button class="close-modal" onclick="closeCheckinModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="form-group">
+                <label>Patient Name *</label>
+                <input type="text" class="form-control" id="ciName" placeholder="Search existing or type new name" list="existingPatients">
+                <datalist id="existingPatients">
+                    <option value="Maria Gonzalez">
+                    <option value="Wei Chen">
+                    <option value="Amir Al-Fayed">
+                    <option value="Elena Rostova">
+                    <option value="Priya Sharma">
+                    <option value="Carlos Mendez">
+                </datalist>
+            </div>
+            <div class="form-group">
+                <label>Appointment Time</label>
+                <select class="form-control" id="ciTime">
+                    <option>Walk-In (No Appointment)</option>
+                    <option>7:30 AM</option><option>8:15 AM</option>
+                    <option selected>9:30 AM</option><option>11:00 AM</option>
+                    <option>2:00 PM</option><option>3:30 PM</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Patient Language</label>
+                <select class="form-control" id="ciLang">
+                    <option>Spanish</option><option>Mandarin</option><option>Arabic</option>
+                    <option>Hindi</option><option>Russian</option><option>Tagalog</option><option>English</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Visit Reason</label>
+                <input type="text" class="form-control" id="ciReason" placeholder="e.g. Follow-up, Urgent Care...">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeCheckinModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="completeCheckin()"><i class="fas fa-user-check"></i> Check In</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let queueData = [
+            { id: 'PT-6544', name: 'Elena Rostova', time: '7:30 AM', lang: 'Russian', type: 'Asthma Followup', status: 'called', insurance: 'Aetna', phone: '(201) 555-0415', room: 'Room 2', copay: '$30.00', checkinTime: '7:18 AM', color: '#2980b9' },
+            { id: 'PT-9102', name: 'Amir Al-Fayed', time: '8:15 AM', lang: 'Arabic', type: 'Diabetes Mgmt', status: 'called', insurance: 'United Healthcare', phone: '(732) 555-0389', room: 'Room 1', copay: '$25.00', checkinTime: '8:05 AM', color: '#16a085' },
+            { id: 'PT-8421', name: 'Maria Gonzalez', time: '9:30 AM', lang: 'Spanish', type: 'Post-op Followup', status: 'here', insurance: 'Medicaid', phone: '(973) 555-0112', room: '—', copay: '$20.00', checkinTime: '9:12 AM', color: '#c0392b' },
+            { id: 'PT-7732', name: 'Wei Chen', time: '11:00 AM', lang: 'Mandarin', type: 'Cardiac Checkup', status: 'waiting', insurance: 'Blue Cross', phone: '(908) 555-0247', room: '—', copay: '$40.00', checkinTime: '—', color: '#e67e22' },
+            { id: 'PT-5218', name: 'Priya Sharma', time: '2:00 PM', lang: 'Hindi', type: 'Prenatal Visit', status: 'waiting', insurance: 'Cigna', phone: '(848) 555-0533', room: '—', copay: '$30.00', checkinTime: '—', color: '#8e44ad' },
+            { id: 'PT-4390', name: 'Carlos Mendez', time: '3:30 PM', lang: 'Spanish', type: 'Cardiology Review', status: 'waiting', insurance: 'Medicare', phone: '(609) 555-0628', room: '—', copay: '$0.00', checkinTime: '—', color: '#e74c3c' },
+        ];
+
+        let selectedId = null;
+
+        function getStatusLabel(s) {
+            if (s === 'here') return '<span class="queue-status qs-here"></span>Checked In';
+            if (s === 'called') return '<span class="queue-status qs-called"></span>In Room';
+            return '<span class="queue-status qs-waiting"></span>Scheduled';
+        }
+
+        function getInitials(name) { return name.split(' ').map(n => n[0]).join('').slice(0, 2); }
+
+        function renderQueue() {
+            document.getElementById('queueCount').textContent = queueData.filter(q => q.status !== 'done').length;
+            document.getElementById('queueList').innerHTML = queueData.map(q => `
+                <div class="queue-item ${selectedId === q.id ? 'selected' : ''}" onclick="selectPatient('${q.id}')">
+                    <div style="display:flex;align-items:center;gap:0.8rem;">
+                        <div style="width:36px;height:36px;border-radius:50%;background:${q.color}22;color:${q.color};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;flex-shrink:0;">${getInitials(q.name)}</div>
+                        <div>
+                            <div class="queue-item-name">${q.name}</div>
+                            <div class="queue-item-meta">${getStatusLabel(q.status)} • ${q.lang}</div>
+                        </div>
+                    </div>
+                    <div class="queue-item-right">
+                        <div class="queue-item-time">${q.time}</div>
+                        <div style="font-size:0.7rem;color:var(--text-muted)">${q.type.length > 16 ? q.type.slice(0,16)+'…' : q.type}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectPatient(id) {
+            selectedId = id;
+            const p = queueData.find(q => q.id === id);
+            if (!p) return;
+            document.getElementById('noSelection').style.display = 'none';
+            document.getElementById('patientWorkspace').style.display = 'block';
+            document.getElementById('selectedName').textContent = p.name;
+            document.getElementById('selectedMeta').textContent = `ID: ${p.id} • ${p.lang}`;
+            document.getElementById('selectedAppt').innerHTML = `<span style="font-size:0.85rem;color:var(--primary);font-weight:600"><i class="fas fa-calendar"></i> ${p.time} — ${p.type} with Dr. Sarah Chen</span>`;
+            document.getElementById('selInsurance').textContent = p.insurance;
+            document.getElementById('selPhone').textContent = p.phone;
+            document.getElementById('selRoom').textContent = p.room;
+            document.getElementById('selCopay').textContent = p.copay;
+            document.getElementById('checkinTime').textContent = p.checkinTime !== '—' ? p.checkinTime : 'Not checked in';
+            document.getElementById('smsRecipient').textContent = p.phone;
+            document.getElementById('bigAvatar').textContent = getInitials(p.name);
+            document.getElementById('bigAvatar').style.background = p.color;
+            const statusMap = { here: 'cb-here', called: 'cb-called', waiting: 'cb-waiting' };
+            const statusText = { here: '✓ Checked In', called: '📍 In Room', waiting: '⏳ Scheduled' };
+            const badge = document.getElementById('statusBadge');
+            badge.className = 'checkin-badge ' + (statusMap[p.status] || 'cb-waiting');
+            badge.textContent = statusText[p.status] || p.status;
+            // Compute wait time
+            if (p.checkinTime !== '—') {
+                const now = new Date();
+                const [t, ampm] = p.checkinTime.split(' ');
+                const [h, m] = t.split(':');
+                let hour = parseInt(h); if (ampm === 'PM' && hour < 12) hour += 12;
+                const checkin = new Date(now); checkin.setHours(hour, parseInt(m), 0);
+                const wait = Math.max(0, Math.floor((now - checkin) / 60000));
+                document.getElementById('waitTime').textContent = wait + ' min';
+            } else {
+                document.getElementById('waitTime').textContent = '—';
+            }
+            renderQueue();
+        }
+
+        function startSelectedSession() {
+            const p = queueData.find(q => q.id === selectedId);
+            if (p) window.location.href = `translator.html?lang=${encodeURIComponent(p.lang)}&patient=${encodeURIComponent(p.name)}`;
+        }
+
+        function callPatient() {
+            const p = queueData.find(q => q.id === selectedId);
+            if (!p) return;
+            const room = p.room !== '—' ? p.room : prompt('Assign exam room:', 'Room 3');
+            if (room) { p.room = room; p.status = 'called'; document.getElementById('selRoom').textContent = room; selectPatient(selectedId); }
+        }
+
+        function assignRoom() {
+            const room = prompt('Assign exam room:', 'Room 3');
+            if (room && selectedId) {
+                const p = queueData.find(q => q.id === selectedId);
+                if (p) { p.room = room; p.status = 'called'; selectPatient(selectedId); }
+            }
+        }
+
+        function collectCopay() {
+            const p = queueData.find(q => q.id === selectedId);
+            if (p) { alert(`💳 Copay of ${p.copay} collected successfully from ${p.name}.`); }
+        }
+
+        function sendPatientLink() {
+            const p = queueData.find(q => q.id === selectedId);
+            if (!p) return;
+            const link = `patient_lobby.html?lang=${encodeURIComponent(p.lang)}&patient=${encodeURIComponent(p.name)}`;
+            if (confirm(`Send SMS link to join session to ${p.phone}?\n\nLink: ${window.location.origin + '/' + link}`)) {
+                alert(`✅ Patient link sent to ${p.phone} via Twilio SMS!`);
+            }
+        }
+
+        function viewRecords() {
+            window.location.href = `patients.html`;
+        }
+
+        function bookFollowup() {
+            window.location.href = `appointments.html`;
+        }
+
+        function markNoShow() {
+            if (confirm('Mark this patient as a No-Show?')) {
+                const p = queueData.find(q => q.id === selectedId);
+                if (p) { p.status = 'done'; document.getElementById('noSelection').style.display = 'block'; document.getElementById('patientWorkspace').style.display = 'none'; selectedId = null; renderQueue(); }
+            }
+        }
+
+        function setSMS(text) { document.getElementById('smsBody').value = text; }
+
+        function sendSMS() {
+            const body = document.getElementById('smsBody').value.trim();
+            const p = queueData.find(q => q.id === selectedId);
+            if (!body) { alert('Please enter a message.'); return; }
+            alert(`✅ SMS sent to ${p ? p.phone : 'patient'}:\n\n"${body}"`);
+            document.getElementById('smsBody').value = '';
+        }
+
+        function openCheckinModal() {
+            const m = document.getElementById('checkinModal');
+            m.style.display = 'flex';
+            setTimeout(() => { m.style.opacity = '1'; document.getElementById('checkinModalContent').classList.add('active'); }, 10);
+        }
+
+        function closeCheckinModal() {
+            const m = document.getElementById('checkinModal');
+            m.style.opacity = '0';
+            document.getElementById('checkinModalContent').classList.remove('active');
+            setTimeout(() => m.style.display = 'none', 300);
+        }
+
+        function completeCheckin() {
+            const name = document.getElementById('ciName').value.trim();
+            const time = document.getElementById('ciTime').value;
+            const lang = document.getElementById('ciLang').value;
+            const reason = document.getElementById('ciReason').value || 'Walk-In Visit';
+            if (!name) { alert('Please enter patient name.'); return; }
+            const now = new Date();
+            const checkinStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            const newEntry = { id: 'PT-' + (5000 + queueData.length), name, time: time === 'Walk-In (No Appointment)' ? 'Walk-In' : time, lang, type: reason, status: 'here', insurance: '—', phone: '—', room: '—', copay: '—', checkinTime: checkinStr, color: '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6,'0') };
+            queueData.push(newEntry);
+            closeCheckinModal();
+            renderQueue();
+            document.getElementById('ciName').value = '';
+            document.getElementById('ciReason').value = '';
+        }
+
+        document.getElementById('checkinModal').addEventListener('click', e => { if (e.target === document.getElementById('checkinModal')) closeCheckinModal(); });
+
+        // Clock
+        function updateClock() {
+            document.getElementById('clockEl').textContent = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+        updateClock(); setInterval(updateClock, 1000);
+
+        // Init
+        renderQueue();
+    </script>
+</body>
+</html>

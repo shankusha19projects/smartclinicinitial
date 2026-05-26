@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translation History - SmartClinics AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .history-filters { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center; }
+        .export-btn { margin-left: auto; }
+        .transcript-viewer { background: var(--bg-light); border-radius: var(--radius-sm); padding: 1.5rem; max-height: 400px; overflow-y: auto; }
+        .transcript-msg { margin-bottom: 1.2rem; }
+        .transcript-msg .speaker { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
+        .transcript-msg .bubble { padding: 0.8rem 1rem; border-radius: 12px; font-size: 0.9rem; max-width: 80%; }
+        .transcript-msg.doc-msg { align-items: flex-end; display: flex; flex-direction: column; }
+        .transcript-msg.doc-msg .bubble { background: var(--primary-bg); color: var(--secondary); border-bottom-right-radius: 4px; }
+        .transcript-msg.patient-msg .bubble { background: white; border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+        .sub-translation { font-size: 0.8rem; color: var(--text-muted); font-style: italic; margin-top: 4px; }
+        .accuracy-bar { height: 6px; background: var(--border); border-radius: 3px; margin-top: 4px; overflow: hidden; }
+        .accuracy-fill { height: 100%; background: linear-gradient(90deg, var(--accent-decorative), #1A7035); border-radius: 3px; transition: width 0.5s; }
+        .modal-overlay { position: fixed; top:0;left:0;right:0;bottom:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); display:none; align-items:center; justify-content:center; z-index:1000; opacity:0; transition:opacity 0.3s; }
+        .modal-content { background:white; width:100%; max-width:680px; border-radius:var(--radius-md); padding:2rem; box-shadow:0 20px 40px rgba(0,0,0,0.2); transform:translateY(20px); transition:transform 0.3s; max-height:85vh; overflow-y:auto; }
+        .modal-content.active { transform:translateY(0); }
+        .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; }
+        .modal-header h3 { margin:0; }
+        .close-modal { background:none; border:none; cursor:pointer; font-size:1.2rem; color:var(--text-muted); }
+        .session-meta { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-bottom:1.5rem; }
+        .meta-item { text-align:center; padding:0.8rem; background:var(--bg-light); border-radius:var(--radius-sm); }
+        .meta-item .val { font-size:1.4rem; font-weight:800; color:var(--secondary); line-height:1; }
+        .meta-item .lbl { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted); margin-top:3px; }
+        .form-control { width:100%; padding:0.6rem 1rem; border:1px solid var(--border); border-radius:var(--radius-sm); font-size:0.9rem; font-family:inherit; }
+        .form-control:focus { border-color:var(--primary); outline:none; }
+        .lang-tag { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:12px; font-size:0.75rem; font-weight:600; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="dashboard.html" class="sidebar-logo">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M40 20 H60 V40 H80 V60 H60 V80 H40 V60 H20 V40 H40 Z" fill="white" opacity="0.9"/><path d="M70 15 Q 90 15 90 35 Q 90 50 80 55 L 85 70 L 65 60 Q 55 65 40 65 Q 20 65 20 45 Q 20 25 40 25 M30 45 H80" fill="none" stroke="#2Ecc71" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="45" cy="45" r="4" fill="#2Ecc71"/><circle cx="65" cy="45" r="4" fill="#2Ecc71"/></svg>
+                    SmartClinics AI
+                </a>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li><a href="patients.html" class="nav-item"><i class="fas fa-users"></i> Patients</a></li>
+                    <li><a href="appointments.html" class="nav-item"><i class="far fa-calendar-alt"></i> Appointments</a></li>
+                    <li><a href="history.html" class="nav-item active"><i class="fas fa-history"></i> Translation History</a></li>
+                    <li><a href="analytics.html" class="nav-item"><i class="fas fa-chart-line"></i> Analytics</a></li>
+                </ul>
+                <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05);">
+                    <ul>
+                        <li><a href="settings.html" class="nav-item"><i class="fas fa-cog"></i> Settings</a></li>
+                        <li><a href="receptionist.html" class="nav-item"><i class="fas fa-headset"></i> Receptionist View</a></li>
+                    </ul>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <img src="https://images.unsplash.com/photo-1594824436998-d8ac09c316af?auto=format&fit=crop&q=80&w=150&h=150" alt="Dr. Sarah Chen" class="avatar">
+                    <div class="user-info">
+                        <span class="user-name">Dr. Sarah Chen</span>
+                        <span class="user-role">Cardiologist</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-wrapper">
+            <header class="top-header">
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="historySearch" placeholder="Search by patient, language, session ID..." onkeyup="filterHistory()">
+                </div>
+                <div class="header-actions">
+                    <button class="icon-btn" title="Notifications"><i class="far fa-bell"></i><span class="badge">3</span></button>
+                </div>
+            </header>
+
+            <div class="main-content">
+                <div class="page-title">
+                    <span>Translation History <span style="font-size:1rem;color:var(--text-muted);font-weight:400;" id="historyCount"></span></span>
+                    <button class="btn btn-outline" onclick="exportCSV()"><i class="fas fa-file-export"></i> Export CSV</button>
+                </div>
+
+                <div class="history-filters">
+                    <select class="form-control" style="width:auto;" id="filterLang" onchange="filterHistory()">
+                        <option value="">All Languages</option>
+                        <option>Spanish</option><option>Mandarin</option><option>Arabic</option>
+                        <option>Hindi</option><option>Russian</option>
+                    </select>
+                    <select class="form-control" style="width:auto;" id="filterDate" onchange="filterHistory()">
+                        <option value="">All Dates</option>
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                    </select>
+                    <select class="form-control" style="width:auto;" id="filterEHR" onchange="filterHistory()">
+                        <option value="">All EHR Status</option>
+                        <option value="exported">EHR Exported</option>
+                        <option value="pending">Pending Export</option>
+                    </select>
+                </div>
+
+                <div class="card">
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Session ID</th>
+                                    <th>Patient</th>
+                                    <th>Date / Time</th>
+                                    <th>Language</th>
+                                    <th>Duration</th>
+                                    <th>Accuracy</th>
+                                    <th>EHR</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Session Detail Modal -->
+    <div class="modal-overlay" id="sessionModal">
+        <div class="modal-content" id="sessionModalContent">
+            <div class="modal-header">
+                <h3 id="sessionTitle">Session Transcript</h3>
+                <button class="close-modal" onclick="closeSessionModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="session-meta" id="sessionMeta"></div>
+            <div class="transcript-viewer" id="transcriptViewer"></div>
+            <div style="display:flex;gap:1rem;margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border);justify-content:flex-end;">
+                <button class="btn btn-outline" onclick="closeSessionModal()">Close</button>
+                <button class="btn btn-outline" onclick="printTranscript()"><i class="fas fa-print"></i> Print</button>
+                <button class="btn btn-primary" id="ehrExportBtn"><i class="fas fa-file-export"></i> Export to EHR</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const sessions = [
+            { id: 'SX-9X4V', patient: 'Amir Al-Fayed', lang: 'Arabic', date: '2026-05-09', time: '8:15 AM', duration: 18, accuracy: 97.4, ehr: 'pending', emergency: false, transcript: [
+                { role: 'doc', text: 'Good morning Amir. How have your blood sugar levels been this week?', translation: 'صباح الخير عامر. كيف كانت مستويات السكر في الدم لديك هذا الأسبوع؟' },
+                { role: 'patient', text: 'لقد كانت أعلى قليلاً من المعتاد.', translation: 'They have been a little higher than usual.' },
+                { role: 'doc', text: "I see. Let's review your metformin dosage. Are you taking it twice daily?", translation: 'أرى ذلك. لنراجع جرعة الميتفورمين الخاصة بك. هل تأخذها مرتين يومياً؟' },
+                { role: 'patient', text: 'نعم، مع الوجبات.', translation: 'Yes, with meals.' },
+                { role: 'doc', text: 'Good. I recommend we increase to 1000mg. Please schedule a follow-up HbA1c in 3 months.', translation: 'جيد. أوصي بزيادة الجرعة إلى 1000 ملغ. يرجى تحديد موعد لإجراء فحص HbA1c كمتابعة خلال 3 أشهر.' }
+            ]},
+            { id: 'SX-3F7R', patient: 'Elena Rostova', lang: 'Russian', date: '2026-05-09', time: '7:30 AM', duration: 22, accuracy: 98.1, ehr: 'exported', emergency: false, transcript: [
+                { role: 'doc', text: 'Elena, how is your breathing been this week? Any nighttime symptoms?', translation: 'Елена, как ваше дыхание на этой неделе? Есть симптомы ночью?' },
+                { role: 'patient', text: 'Ночью было лучше после использования ингалятора.', translation: 'Nights have been better after using the inhaler.' },
+                { role: 'doc', text: 'Excellent. Your peak flow readings look improved. We can continue the current regimen.', translation: 'Отлично. Ваши показатели пикового потока улучшились. Мы можем продолжить текущий режим лечения.' }
+            ]},
+            { id: 'SX-8K2M', patient: 'Maria Gonzalez', lang: 'Spanish', date: '2026-05-08', time: '9:30 AM', duration: 35, accuracy: 99.1, ehr: 'pending', emergency: true, transcript: [
+                { role: 'doc', text: "Hello Maria. Let's check your incision. How has the pain been?", translation: 'Hola María. Revisemos su incisión. ¿Cómo ha estado el dolor?' },
+                { role: 'patient', text: 'Me duele mucho el pecho al respirar.', translation: 'I have a lot of chest pain when I breathe deeply.' },
+                { role: 'doc', text: "That is concerning. Let me listen to your lungs. Can you take a deep breath?", translation: 'Eso es preocupante. Déjame auscultar sus pulmones. ¿Puede respirar profundo?' },
+                { role: 'patient', text: 'Es difícil respirar profundo sin dolor.', translation: 'It is difficult to breathe deeply without pain.' },
+                { role: 'doc', text: 'I am going to order a chest X-ray. This may indicate a minor complication.', translation: 'Voy a ordenar una radiografía de tórax. Esto podría indicar una complicación menor.' }
+            ]},
+            { id: 'SX-5T9P', patient: 'Wei Chen', lang: 'Mandarin', date: '2026-05-07', time: '11:00 AM', duration: 24, accuracy: 96.8, ehr: 'exported', emergency: false, transcript: [
+                { role: 'doc', text: 'Wei, your EKG from last month looks stable. Any palpitations?', translation: '魏，你上个月的心电图看起来稳定。有心悸吗？' },
+                { role: 'patient', text: '偶尔会有，但不经常。', translation: 'Occasionally, but not often.' },
+                { role: 'doc', text: 'That is expected with your current beta-blocker. We will continue monitoring.', translation: '这对您目前服用的β受体阻滞剂来说是正常的。我们将继续监测。' }
+            ]},
+            { id: 'SX-2V6L', patient: 'Priya Sharma', lang: 'Hindi', date: '2026-05-05', time: '2:00 PM', duration: 30, accuracy: 97.9, ehr: 'exported', emergency: false, transcript: [
+                { role: 'doc', text: 'Priya, your glucose challenge test results are back. Let us discuss them.', translation: 'प्रिया, आपके ग्लूकोज चैलेंज टेस्ट के नतीजे आ गए हैं। आइए उनपर चर्चा करें।' },
+                { role: 'patient', text: 'मुझे थोड़ी चिंता हो रही है। क्या सब ठीक है?', translation: 'I am a little worried. Is everything okay?' },
+                { role: 'doc', text: 'Your numbers are borderline. I recommend a 3-hour diagnostic test. It is a precaution.', translation: 'आपके नंबर बॉर्डरलाइन हैं। मैं 3 घंटे का डायग्नोस्टिक टेस्ट करवाने की सलाह देता हूं। यह एक एहतियाती उपाय है।' }
+            ]}
+        ];
+
+        function filterHistory() {
+            const search = document.getElementById('historySearch').value.toLowerCase();
+            const lang = document.getElementById('filterLang').value;
+            const ehr = document.getElementById('filterEHR').value;
+            let filtered = sessions;
+            if (search) filtered = filtered.filter(s => s.patient.toLowerCase().includes(search) || s.lang.toLowerCase().includes(search) || s.id.toLowerCase().includes(search));
+            if (lang) filtered = filtered.filter(s => s.lang === lang);
+            if (ehr) filtered = filtered.filter(s => s.ehr === ehr);
+            renderHistory(filtered);
+        }
+
+        const langColors = { Spanish: '#c0392b', Mandarin: '#e67e22', Arabic: '#16a085', Hindi: '#8e44ad', Russian: '#2980b9' };
+        const langBg = l => ({ Spanish: '#fde', Mandarin: '#fef3e2', Arabic: '#e8f8f5', Hindi: '#f3e5f5', Russian: '#ebf5fb' }[l] || '#f0f0f0');
+
+        function renderHistory(list) {
+            document.getElementById('historyCount').textContent = `(${list.length} records)`;
+            const tbody = document.getElementById('historyTableBody');
+            if (!list.length) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:3rem;color:var(--text-muted)"><i class="fas fa-search" style="font-size:2rem;display:block;margin-bottom:1rem;opacity:0.3"></i>No sessions found</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = list.map(s => `
+                <tr>
+                    <td><span style="font-family:monospace;font-size:0.85rem;color:var(--primary);font-weight:700">${s.id}</span>${s.emergency ? ' <span title="Emergency keywords detected" style="color:var(--danger);font-size:0.8rem">⚠</span>' : ''}</td>
+                    <td style="font-weight:600">${s.patient}</td>
+                    <td>${formatDate(s.date)} <span style="color:var(--text-muted);font-size:0.85rem">${s.time}</span></td>
+                    <td><span class="lang-tag" style="background:${langBg(s.lang)};color:${langColors[s.lang]||'#666'}">${s.lang}</span></td>
+                    <td>${s.duration} min</td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span style="font-weight:700;font-size:0.9rem;color:${s.accuracy>=98?'var(--accent)':'var(--primary)'}">${s.accuracy}%</span>
+                            <div class="accuracy-bar" style="width:60px"><div class="accuracy-fill" style="width:${s.accuracy}%"></div></div>
+                        </div>
+                    </td>
+                    <td>${s.ehr === 'exported' ? '<span class="status-badge status-completed"><i class="fas fa-check"></i> Exported</span>' : '<span class="status-badge status-scheduled">Pending</span>'}</td>
+                    <td>
+                        <div class="flex gap-1">
+                            <button class="btn btn-outline" style="padding:0.3rem 0.7rem;font-size:0.8rem;" onclick="viewSession('${s.id}')"><i class="fas fa-eye"></i></button>
+                            ${s.ehr === 'pending' ? `<button class="btn btn-outline" style="padding:0.3rem 0.7rem;font-size:0.8rem;" onclick="exportEHR('${s.id}')"><i class="fas fa-file-export"></i></button>` : ''}
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function formatDate(d) { return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
+
+        function viewSession(id) {
+            const s = sessions.find(x => x.id === id);
+            if (!s) return;
+            document.getElementById('sessionTitle').textContent = `Session ${s.id} — ${s.patient}`;
+            document.getElementById('sessionMeta').innerHTML = `
+                <div class="meta-item"><div class="val">${s.duration}m</div><div class="lbl">Duration</div></div>
+                <div class="meta-item"><div class="val">${s.accuracy}%</div><div class="lbl">Accuracy</div></div>
+                <div class="meta-item"><div class="val">${s.transcript.length}</div><div class="lbl">Exchanges</div></div>
+                <div class="meta-item"><div class="val ${s.ehr==='exported'?'':'text-warning'}">${s.ehr==='exported'?'✓ Sent':'Pending'}</div><div class="lbl">EHR Status</div></div>
+            `;
+            document.getElementById('transcriptViewer').innerHTML = s.transcript.map(m => `
+                <div class="transcript-msg ${m.role === 'doc' ? 'doc-msg' : 'patient-msg'}">
+                    <div class="speaker">${m.role === 'doc' ? '👩‍⚕️ Dr. Chen (English)' : `🧑 Patient (${s.lang})`}</div>
+                    <div class="bubble">${m.text}<div class="sub-translation">${m.translation}</div></div>
+                </div>
+            `).join('');
+            document.getElementById('ehrExportBtn').onclick = () => exportEHR(id);
+            openSessionModal();
+        }
+
+        function exportEHR(id) {
+            const s = sessions.find(x => x.id === id);
+            if (s) { s.ehr = 'exported'; filterHistory(); }
+            closeSessionModal();
+            renderHistory(sessions);
+            // Mini toast
+            const toast = document.createElement('div');
+            toast.style.cssText = 'position:fixed;bottom:2rem;right:2rem;background:#1A7035;color:white;padding:1rem 1.5rem;border-radius:8px;z-index:9999;font-weight:600;animation:fadeIn 0.3s';
+            toast.innerHTML = '<i class="fas fa-check-circle" style="margin-right:8px"></i>Session exported to EHR successfully.';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function exportCSV() {
+            const rows = [['Session ID','Patient','Date','Language','Duration','Accuracy','EHR Status']];
+            sessions.forEach(s => rows.push([s.id, s.patient, s.date, s.lang, s.duration + ' min', s.accuracy + '%', s.ehr]));
+            const csv = rows.map(r => r.join(',')).join('\n');
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'translation_history.csv'; a.click();
+        }
+
+        function printTranscript() { window.print(); }
+
+        function openSessionModal() {
+            const m = document.getElementById('sessionModal');
+            m.style.display = 'flex';
+            setTimeout(() => { m.style.opacity = '1'; document.getElementById('sessionModalContent').classList.add('active'); }, 10);
+        }
+
+        function closeSessionModal() {
+            const m = document.getElementById('sessionModal');
+            m.style.opacity = '0';
+            document.getElementById('sessionModalContent').classList.remove('active');
+            setTimeout(() => m.style.display = 'none', 300);
+        }
+
+        document.getElementById('sessionModal').addEventListener('click', e => { if (e.target === document.getElementById('sessionModal')) closeSessionModal(); });
+
+        // Init
+        filterHistory();
+    </script>
+</body>
+</html>

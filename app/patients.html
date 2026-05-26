@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patients - SmartClinics AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .patient-filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            padding: 0.5rem 1.2rem;
+            border-radius: var(--radius-pill);
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: 1px solid var(--border);
+            background: white;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .filter-btn.active, .filter-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        .patient-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: var(--primary-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        .patient-name-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .lang-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: var(--primary-bg);
+            color: var(--primary);
+        }
+        .modal-overlay { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 1000; opacity: 0; transition: opacity 0.3s; }
+        .modal-content { background: white; width: 100%; max-width: 580px; border-radius: var(--radius-md); padding: 2rem; box-shadow: 0 20px 40px rgba(0,0,0,0.2); transform: translateY(20px); transition: transform 0.3s; max-height: 90vh; overflow-y: auto; }
+        .modal-content.active { transform: translateY(0); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .modal-header h3 { margin: 0; font-size: 1.2rem; color: var(--secondary); }
+        .close-modal { background: none; border: none; font-size: 1.2rem; color: var(--text-muted); cursor: pointer; }
+        .form-group { margin-bottom: 1.2rem; }
+        .form-group label { display: block; margin-bottom: 0.4rem; font-weight: 600; font-size: 0.85rem; color: var(--secondary); }
+        .form-control { width: 100%; padding: 0.7rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.95rem; transition: var(--transition); font-family: inherit; }
+        .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(74,144,226,0.1); outline: none; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+        .patient-detail-modal { max-width: 700px; }
+        .detail-section { margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+        .detail-section:last-child { border-bottom: none; margin-bottom: 0; }
+        .detail-section h4 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 1rem; }
+        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+        .detail-item label { display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 3px; }
+        .detail-item span { font-weight: 600; font-size: 0.95rem; }
+        .visit-log { list-style: none; padding: 0; }
+        .visit-log li { display: flex; justify-content: space-between; align-items: center; padding: 0.7rem 0; border-bottom: 1px solid var(--bg-light); font-size: 0.9rem; }
+        .visit-log li:last-child { border-bottom: none; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="dashboard.html" class="sidebar-logo">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M40 20 H60 V40 H80 V60 H60 V80 H40 V60 H20 V40 H40 Z" fill="white" opacity="0.9"/><path d="M70 15 Q 90 15 90 35 Q 90 50 80 55 L 85 70 L 65 60 Q 55 65 40 65 Q 20 65 20 45 Q 20 25 40 25 M30 45 H80" fill="none" stroke="#2Ecc71" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="45" cy="45" r="4" fill="#2Ecc71"/><circle cx="65" cy="45" r="4" fill="#2Ecc71"/></svg>
+                    SmartClinics AI
+                </a>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li><a href="patients.html" class="nav-item active"><i class="fas fa-users"></i> Patients</a></li>
+                    <li><a href="appointments.html" class="nav-item"><i class="far fa-calendar-alt"></i> Appointments</a></li>
+                    <li><a href="history.html" class="nav-item"><i class="fas fa-history"></i> Translation History</a></li>
+                    <li><a href="analytics.html" class="nav-item"><i class="fas fa-chart-line"></i> Analytics</a></li>
+                </ul>
+                <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05);">
+                    <ul>
+                        <li><a href="settings.html" class="nav-item"><i class="fas fa-cog"></i> Settings</a></li>
+                        <li><a href="receptionist.html" class="nav-item"><i class="fas fa-headset"></i> Receptionist View</a></li>
+                    </ul>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <img src="https://images.unsplash.com/photo-1594824436998-d8ac09c316af?auto=format&fit=crop&q=80&w=150&h=150" alt="Dr. Sarah Chen" class="avatar">
+                    <div class="user-info">
+                        <span class="user-name">Dr. Sarah Chen</span>
+                        <span class="user-role">Cardiologist</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-wrapper">
+            <header class="top-header">
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search by name, ID, language..." onkeyup="filterPatients()">
+                </div>
+                <div class="header-actions">
+                    <button class="icon-btn" title="Notifications">
+                        <i class="far fa-bell"></i>
+                        <span class="badge">3</span>
+                    </button>
+                    <button class="btn btn-primary" id="addPatientBtn">
+                        <i class="fas fa-plus"></i> Add Patient
+                    </button>
+                </div>
+            </header>
+
+            <div class="main-content">
+                <div class="page-title">
+                    <span>Patient Registry <span style="font-size:1rem; color: var(--text-muted); font-weight:400;" id="patientCount">(0 patients)</span></span>
+                </div>
+
+                <div class="patient-filters">
+                    <button class="filter-btn active" onclick="filterByStatus('all', this)">All Patients</button>
+                    <button class="filter-btn" onclick="filterByStatus('active', this)">Active</button>
+                    <button class="filter-btn" onclick="filterByStatus('scheduled', this)">Scheduled Today</button>
+                    <button class="filter-btn" onclick="filterByStatus('completed', this)">Completed</button>
+                    <button class="filter-btn" onclick="filterByStatus('spanish', this)">Spanish</button>
+                    <button class="filter-btn" onclick="filterByStatus('mandarin', this)">Mandarin</button>
+                    <button class="filter-btn" onclick="filterByStatus('arabic', this)">Arabic</button>
+                </div>
+
+                <div class="card">
+                    <div class="table-responsive">
+                        <table id="patientsTable">
+                            <thead>
+                                <tr>
+                                    <th>Patient</th>
+                                    <th>DOB / Age</th>
+                                    <th>Language</th>
+                                    <th>Last Visit</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="patientsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Patient Modal -->
+    <div class="modal-overlay" id="addPatientModal">
+        <div class="modal-content" id="addPatientModalContent">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-plus" style="color: var(--primary); margin-right: 8px;"></i>Register New Patient</h3>
+                <button class="close-modal" onclick="closeModal('addPatientModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>First Name *</label>
+                    <input type="text" class="form-control" id="newFirstName" placeholder="e.g. Maria" required>
+                </div>
+                <div class="form-group">
+                    <label>Last Name *</label>
+                    <input type="text" class="form-control" id="newLastName" placeholder="e.g. Gonzalez" required>
+                </div>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Date of Birth *</label>
+                    <input type="date" class="form-control" id="newDOB">
+                </div>
+                <div class="form-group">
+                    <label>Patient ID</label>
+                    <input type="text" class="form-control" id="newPatientID" placeholder="Auto-generated" readonly style="background: var(--bg-light);">
+                </div>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Preferred Language *</label>
+                    <select class="form-control" id="newLanguage">
+                        <option value="Spanish">Spanish (All Dialects)</option>
+                        <option value="Mandarin">Mandarin Chinese</option>
+                        <option value="Arabic">Arabic</option>
+                        <option value="Hindi">Hindi</option>
+                        <option value="Russian">Russian</option>
+                        <option value="Tagalog">Tagalog</option>
+                        <option value="Vietnamese">Vietnamese</option>
+                        <option value="Portuguese">Portuguese</option>
+                        <option value="French">French</option>
+                        <option value="Korean">Korean</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" class="form-control" id="newPhone" placeholder="(555) 000-0000">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" class="form-control" id="newEmail" placeholder="patient@email.com">
+            </div>
+            <div class="form-group">
+                <label>Insurance Provider</label>
+                <input type="text" class="form-control" id="newInsurance" placeholder="e.g. Blue Cross Blue Shield">
+            </div>
+            <div class="form-group">
+                <label>Primary Complaint / Notes</label>
+                <textarea class="form-control" id="newNotes" rows="3" placeholder="Brief description of patient concern..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('addPatientModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="addNewPatient()"><i class="fas fa-save"></i> Register Patient</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Patient Detail Modal -->
+    <div class="modal-overlay" id="patientDetailModal">
+        <div class="modal-content patient-detail-modal" id="patientDetailContent">
+            <div class="modal-header">
+                <h3 id="detailPatientName">Patient Details</h3>
+                <button class="close-modal" onclick="closeModal('patientDetailModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="patientDetailBody"></div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('patientDetailModal')">Close</button>
+                <button class="btn btn-primary" id="startSessionFromDetail" onclick="startPatientSession()">
+                    <i class="fas fa-phone-volume"></i> Start Translation Session
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Patient data store (simulated)
+        let patients = [
+            { id: 'PT-8421', firstName: 'Maria', lastName: 'Gonzalez', dob: '1954-05-12', language: 'Spanish', phone: '(973) 555-0112', email: 'maria.g@email.com', insurance: 'Medicaid', lastVisit: '2026-05-08', status: 'scheduled', notes: 'Post-op orthopedic followup. Hypertensive.', visits: [{ date: '2026-05-08', type: 'Post-op Followup', duration: '18 min', provider: 'Dr. Chen' }, { date: '2026-04-22', type: 'Initial Consult', duration: '32 min', provider: 'Dr. Chen' }] },
+            { id: 'PT-7732', firstName: 'Wei', lastName: 'Chen', dob: '1982-11-04', language: 'Mandarin', phone: '(908) 555-0247', email: 'wei.chen@email.com', insurance: 'Blue Cross', lastVisit: '2026-04-15', status: 'scheduled', notes: 'Cardiac monitoring. EKG every 3 months.', visits: [{ date: '2026-04-15', type: 'Cardiac Checkup', duration: '24 min', provider: 'Dr. Chen' }] },
+            { id: 'PT-9102', firstName: 'Amir', lastName: 'Al-Fayed', dob: '1975-02-28', language: 'Arabic', phone: '(732) 555-0389', email: 'amir.af@email.com', insurance: 'United Healthcare', lastVisit: '2026-05-09', status: 'completed', notes: 'Type 2 Diabetes. Medication review completed.', visits: [{ date: '2026-05-09', type: 'Diabetes Mgmt', duration: '18 min', provider: 'Dr. Chen' }, { date: '2026-03-02', type: 'Blood Work Review', duration: '15 min', provider: 'Dr. Chen' }] },
+            { id: 'PT-6544', firstName: 'Elena', lastName: 'Rostova', dob: '1968-09-15', language: 'Russian', phone: '(201) 555-0415', email: 'elena.r@email.com', insurance: 'Aetna', lastVisit: '2026-05-09', status: 'completed', notes: 'Asthma management. Inhaler technique corrected.', visits: [{ date: '2026-05-09', type: 'Asthma Followup', duration: '22 min', provider: 'Dr. Chen' }] },
+            { id: 'PT-5218', firstName: 'Priya', lastName: 'Sharma', dob: '1990-07-22', language: 'Hindi', phone: '(848) 555-0533', email: 'priya.s@email.com', insurance: 'Cigna', lastVisit: '2026-04-30', status: 'active', notes: 'Prenatal care, 28 weeks. GTT test scheduled.', visits: [{ date: '2026-04-30', type: 'OB/GYN Prenatal', duration: '30 min', provider: 'Dr. Chen' }, { date: '2026-03-18', type: 'Prenatal Week 24', duration: '28 min', provider: 'Dr. Chen' }] },
+            { id: 'PT-4390', firstName: 'Carlos', lastName: 'Mendez', dob: '1965-03-10', language: 'Spanish', phone: '(609) 555-0628', email: 'carlos.m@email.com', insurance: 'Medicare', lastVisit: '2026-05-01', status: 'active', notes: 'Hypertension, hyperlipidemia. Statin dosage increased.', visits: [{ date: '2026-05-01', type: 'Cardiology Review', duration: '20 min', provider: 'Dr. Chen' }] },
+            { id: 'PT-3314', firstName: 'Mei', lastName: 'Lin', dob: '1978-12-01', language: 'Mandarin', phone: '(551) 555-0714', email: 'mei.lin@email.com', insurance: 'Humana', lastVisit: '2026-04-10', status: 'active', notes: 'Thyroid disorder. Annual ultrasound needed.', visits: [{ date: '2026-04-10', type: 'Thyroid Checkup', duration: '16 min', provider: 'Dr. Chen' }] },
+            { id: 'PT-2208', firstName: 'Rosa', lastName: 'Hernandez', dob: '1950-06-18', language: 'Spanish', phone: '(973) 555-0821', email: 'rosa.h@email.com', insurance: 'Medicaid', lastVisit: '2026-03-25', status: 'active', notes: 'Arthritis. PT referral completed.', visits: [{ date: '2026-03-25', type: 'Arthritis Consult', duration: '28 min', provider: 'Dr. Chen' }] }
+        ];
+
+        let currentFilter = 'all';
+        let selectedPatientId = null;
+
+        const langColors = {
+            'Spanish': '#e74c3c', 'Mandarin': '#e67e22', 'Arabic': '#16a085',
+            'Hindi': '#8e44ad', 'Russian': '#2980b9', 'Tagalog': '#d35400',
+            'Vietnamese': '#27ae60', 'Portuguese': '#c0392b', 'French': '#2c3e50', 'Korean': '#1abc9c'
+        };
+
+        function getInitials(first, last) { return (first[0] + last[0]).toUpperCase(); }
+        function getAge(dob) { const d = new Date(dob); const today = new Date(); let age = today.getFullYear() - d.getFullYear(); const m = today.getMonth() - d.getMonth(); if (m < 0 || (m === 0 && today.getDate() < d.getDate())) age--; return age; }
+        function formatDate(d) { if (!d) return '—'; const dt = new Date(d); return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
+
+        function renderPatients(list) {
+            const tbody = document.getElementById('patientsTableBody');
+            document.getElementById('patientCount').textContent = `(${list.length} patient${list.length !== 1 ? 's' : ''})`;
+            if (!list.length) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:3rem;color:var(--text-muted)"><i class="fas fa-user-slash" style="font-size:2rem;display:block;margin-bottom:1rem;opacity:0.3"></i>No patients found</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = list.map(p => `
+                <tr>
+                    <td>
+                        <div class="patient-name-cell">
+                            <div class="patient-avatar" style="background:${langColors[p.language] || '#4a90e2'}22; color:${langColors[p.language] || '#4a90e2'}">${getInitials(p.firstName, p.lastName)}</div>
+                            <div>
+                                <div style="font-weight:600">${p.firstName} ${p.lastName}</div>
+                                <div style="font-size:0.8rem;color:var(--text-muted)">ID: ${p.id}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${formatDate(p.dob)} <span style="color:var(--text-muted);font-size:0.85rem;">(${getAge(p.dob)} yrs)</span></td>
+                    <td><span class="lang-tag" style="background:${langColors[p.language] || '#4a90e2'}18;color:${langColors[p.language] || '#4a90e2'}">${p.language}</span></td>
+                    <td>${formatDate(p.lastVisit)}</td>
+                    <td>${getStatusBadge(p.status)}</td>
+                    <td>
+                        <div class="flex gap-1">
+                            <button class="btn btn-outline" style="padding:0.3rem 0.7rem;font-size:0.8rem;" onclick="viewPatient('${p.id}')"><i class="fas fa-eye"></i></button>
+                            <button class="btn btn-primary" style="padding:0.3rem 0.8rem;font-size:0.8rem;" onclick="quickSession('${p.id}')"><i class="fas fa-phone-volume"></i> Session</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function getStatusBadge(status) {
+            const map = { scheduled: '<span class="status-badge status-scheduled">Scheduled Today</span>', active: '<span class="status-badge status-active">Active</span>', completed: '<span class="status-badge status-completed">Completed</span>' };
+            return map[status] || `<span class="status-badge">${status}</span>`;
+        }
+
+        function filterByStatus(status, btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentFilter = status;
+            applyFilters();
+        }
+
+        function filterPatients() { applyFilters(); }
+
+        function applyFilters() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            let filtered = patients;
+            if (currentFilter !== 'all') {
+                const langFilters = ['spanish', 'mandarin', 'arabic', 'hindi', 'russian'];
+                if (langFilters.includes(currentFilter)) {
+                    filtered = filtered.filter(p => p.language.toLowerCase() === currentFilter);
+                } else {
+                    filtered = filtered.filter(p => p.status === currentFilter);
+                }
+            }
+            if (search) {
+                filtered = filtered.filter(p =>
+                    `${p.firstName} ${p.lastName}`.toLowerCase().includes(search) ||
+                    p.id.toLowerCase().includes(search) ||
+                    p.language.toLowerCase().includes(search) ||
+                    (p.email || '').toLowerCase().includes(search)
+                );
+            }
+            renderPatients(filtered);
+        }
+
+        function viewPatient(id) {
+            const p = patients.find(x => x.id === id);
+            if (!p) return;
+            selectedPatientId = id;
+            document.getElementById('detailPatientName').textContent = `${p.firstName} ${p.lastName}`;
+            document.getElementById('patientDetailBody').innerHTML = `
+                <div class="detail-section">
+                    <h4>Demographics</h4>
+                    <div class="detail-grid">
+                        <div class="detail-item"><label>Patient ID</label><span>${p.id}</span></div>
+                        <div class="detail-item"><label>Date of Birth</label><span>${formatDate(p.dob)}</span></div>
+                        <div class="detail-item"><label>Age</label><span>${getAge(p.dob)} years</span></div>
+                        <div class="detail-item"><label>Preferred Language</label><span class="lang-tag" style="background:${langColors[p.language]}18;color:${langColors[p.language]}">${p.language}</span></div>
+                        <div class="detail-item"><label>Phone</label><span>${p.phone || '—'}</span></div>
+                        <div class="detail-item"><label>Email</label><span>${p.email || '—'}</span></div>
+                        <div class="detail-item"><label>Insurance</label><span>${p.insurance || '—'}</span></div>
+                        <div class="detail-item"><label>Status</label><span>${getStatusBadge(p.status)}</span></div>
+                    </div>
+                </div>
+                <div class="detail-section">
+                    <h4>Clinical Notes</h4>
+                    <p style="font-size:0.95rem;color:var(--text-main)">${p.notes || 'No notes on file.'}</p>
+                </div>
+                <div class="detail-section">
+                    <h4>Visit History</h4>
+                    <ul class="visit-log">
+                        ${(p.visits || []).map(v => `
+                            <li>
+                                <div>
+                                    <div style="font-weight:600">${v.type}</div>
+                                    <div style="font-size:0.8rem;color:var(--text-muted)">${formatDate(v.date)} • ${v.provider}</div>
+                                </div>
+                                <div style="text-align:right">
+                                    <span class="status-badge status-completed">${v.duration}</span>
+                                </div>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+            `;
+            openModal('patientDetailModal', 'patientDetailContent');
+        }
+
+        function quickSession(id) {
+            const p = patients.find(x => x.id === id);
+            if (!p) return;
+            window.location.href = `translator.html?lang=${encodeURIComponent(p.language)}&patient=${encodeURIComponent(p.firstName + ' ' + p.lastName)}`;
+        }
+
+        function startPatientSession() {
+            if (selectedPatientId) quickSession(selectedPatientId);
+        }
+
+        function addNewPatient() {
+            const firstName = document.getElementById('newFirstName').value.trim();
+            const lastName = document.getElementById('newLastName').value.trim();
+            if (!firstName || !lastName) { alert('Please enter first and last name.'); return; }
+            const newId = 'PT-' + (1000 + patients.length + 1);
+            const newPatient = {
+                id: newId,
+                firstName, lastName,
+                dob: document.getElementById('newDOB').value || '1990-01-01',
+                language: document.getElementById('newLanguage').value,
+                phone: document.getElementById('newPhone').value,
+                email: document.getElementById('newEmail').value,
+                insurance: document.getElementById('newInsurance').value,
+                lastVisit: null, status: 'active',
+                notes: document.getElementById('newNotes').value,
+                visits: []
+            };
+            patients.unshift(newPatient);
+            closeModal('addPatientModal');
+            applyFilters();
+            // Clear form
+            ['newFirstName','newLastName','newDOB','newPhone','newEmail','newInsurance','newNotes'].forEach(id => document.getElementById(id).value = '');
+        }
+
+        function openModal(overlayId, contentId) {
+            const overlay = document.getElementById(overlayId);
+            const content = document.getElementById(contentId);
+            overlay.style.display = 'flex';
+            setTimeout(() => { overlay.style.opacity = '1'; content.classList.add('active'); }, 10);
+        }
+
+        function closeModal(overlayId) {
+            const overlay = document.getElementById(overlayId);
+            const content = overlay.querySelector('.modal-content');
+            overlay.style.opacity = '0';
+            content.classList.remove('active');
+            setTimeout(() => { overlay.style.display = 'none'; }, 300);
+        }
+
+        // Auto-generate patient ID on modal open
+        document.getElementById('addPatientBtn').addEventListener('click', () => {
+            document.getElementById('newPatientID').value = 'PT-' + (1000 + patients.length + 1);
+            openModal('addPatientModal', 'addPatientModalContent');
+        });
+
+        // Close on overlay click
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(overlay.id); });
+        });
+
+        // Initial render
+        renderPatients(patients);
+    </script>
+</body>
+</html>

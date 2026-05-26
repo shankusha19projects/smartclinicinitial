@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointments - SmartClinics AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .calendar-nav { display: flex; align-items: center; gap: 1rem; }
+        .calendar-nav button { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border); background: white; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition); }
+        .calendar-nav button:hover { background: var(--primary); color: white; border-color: var(--primary); }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        .cal-day-header { text-align: center; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); padding: 0.5rem; }
+        .cal-day { min-height: 90px; background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px; cursor: pointer; transition: var(--transition); }
+        .cal-day:hover { border-color: var(--primary); background: var(--primary-bg); }
+        .cal-day.today { border-color: var(--primary); background: var(--primary-bg); }
+        .cal-day.other-month { opacity: 0.4; }
+        .cal-day.selected { background: var(--primary); color: white; border-color: var(--primary); }
+        .cal-day.selected .cal-day-num { color: white; }
+        .cal-day-num { font-weight: 700; font-size: 0.9rem; color: var(--secondary); margin-bottom: 4px; }
+        .cal-day.today .cal-day-num { color: var(--primary); }
+        .cal-appt { font-size: 0.7rem; padding: 2px 5px; border-radius: 3px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .appt-spanish { background: #fde; color: #c0392b; }
+        .appt-mandarin { background: #fef3e2; color: #e67e22; }
+        .appt-arabic { background: #e8f8f5; color: #16a085; }
+        .appt-hindi { background: #f3e5f5; color: #8e44ad; }
+        .appt-russian { background: #ebf5fb; color: #2980b9; }
+        .appt-other { background: var(--bg-light); color: var(--text-muted); }
+        .time-slots { display: flex; flex-direction: column; gap: 0; }
+        .time-slot { display: flex; border-bottom: 1px solid var(--bg-light); }
+        .time-label { width: 70px; padding: 0.6rem 0.5rem; font-size: 0.75rem; color: var(--text-muted); font-weight: 600; flex-shrink: 0; }
+        .slot-content { flex: 1; padding: 0.4rem; min-height: 52px; }
+        .appt-block { background: var(--primary-bg); border-left: 3px solid var(--primary); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; padding: 0.5rem 0.8rem; margin-bottom: 4px; cursor: pointer; transition: var(--transition); }
+        .appt-block:hover { background: var(--primary); color: white; }
+        .appt-block:hover .appt-block-sub { color: rgba(255,255,255,0.8); }
+        .appt-block-name { font-weight: 600; font-size: 0.85rem; }
+        .appt-block-sub { font-size: 0.75rem; color: var(--text-muted); }
+        .appt-block.arabic { border-color: #16a085; background: #e8f8f5; }
+        .appt-block.spanish { border-color: #c0392b; background: #fde; }
+        .appt-block.mandarin { border-color: #e67e22; background: #fef3e2; }
+        .view-toggle { display: flex; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
+        .view-toggle button { padding: 0.5rem 1rem; border: none; background: white; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: var(--transition); }
+        .view-toggle button.active { background: var(--primary); color: white; }
+        .modal-overlay { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 1000; opacity: 0; transition: opacity 0.3s; }
+        .modal-content { background: white; width: 100%; max-width: 500px; border-radius: var(--radius-md); padding: 2rem; box-shadow: 0 20px 40px rgba(0,0,0,0.2); transform: translateY(20px); transition: transform 0.3s; }
+        .modal-content.active { transform: translateY(0); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .modal-header h3 { margin: 0; }
+        .close-modal { background: none; border: none; cursor: pointer; font-size: 1.2rem; color: var(--text-muted); }
+        .form-group { margin-bottom: 1.2rem; }
+        .form-group label { display: block; margin-bottom: 0.4rem; font-weight: 600; font-size: 0.85rem; color: var(--secondary); }
+        .form-control { width: 100%; padding: 0.7rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.95rem; font-family: inherit; }
+        .form-control:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(74,144,226,0.1); }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="dashboard.html" class="sidebar-logo">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M40 20 H60 V40 H80 V60 H60 V80 H40 V60 H20 V40 H40 Z" fill="white" opacity="0.9"/><path d="M70 15 Q 90 15 90 35 Q 90 50 80 55 L 85 70 L 65 60 Q 55 65 40 65 Q 20 65 20 45 Q 20 25 40 25 M30 45 H80" fill="none" stroke="#2Ecc71" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="45" cy="45" r="4" fill="#2Ecc71"/><circle cx="65" cy="45" r="4" fill="#2Ecc71"/></svg>
+                    SmartClinics AI
+                </a>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li><a href="patients.html" class="nav-item"><i class="fas fa-users"></i> Patients</a></li>
+                    <li><a href="appointments.html" class="nav-item active"><i class="far fa-calendar-alt"></i> Appointments</a></li>
+                    <li><a href="history.html" class="nav-item"><i class="fas fa-history"></i> Translation History</a></li>
+                    <li><a href="analytics.html" class="nav-item"><i class="fas fa-chart-line"></i> Analytics</a></li>
+                </ul>
+                <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05);">
+                    <ul>
+                        <li><a href="settings.html" class="nav-item"><i class="fas fa-cog"></i> Settings</a></li>
+                        <li><a href="receptionist.html" class="nav-item"><i class="fas fa-headset"></i> Receptionist View</a></li>
+                    </ul>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <img src="https://images.unsplash.com/photo-1594824436998-d8ac09c316af?auto=format&fit=crop&q=80&w=150&h=150" alt="Dr. Sarah Chen" class="avatar">
+                    <div class="user-info">
+                        <span class="user-name">Dr. Sarah Chen</span>
+                        <span class="user-role">Cardiologist</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-wrapper">
+            <header class="top-header">
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search appointments...">
+                </div>
+                <div class="header-actions">
+                    <button class="icon-btn" title="Notifications">
+                        <i class="far fa-bell"></i><span class="badge">3</span>
+                    </button>
+                    <button class="btn btn-primary" id="newApptBtn">
+                        <i class="fas fa-plus"></i> New Appointment
+                    </button>
+                </div>
+            </header>
+
+            <div class="main-content">
+                <div class="page-title">
+                    <span>Appointments</span>
+                    <div class="view-toggle">
+                        <button class="active" onclick="switchView('day', this)">Day</button>
+                        <button onclick="switchView('week', this)">Week</button>
+                        <button onclick="switchView('month', this)">Month</button>
+                    </div>
+                </div>
+
+                <!-- Day View -->
+                <div id="dayView" class="card">
+                    <div class="calendar-header">
+                        <div class="calendar-nav">
+                            <button onclick="changeDay(-1)"><i class="fas fa-chevron-left"></i></button>
+                            <h3 style="margin:0;font-size:1.1rem;" id="dayViewTitle">Thursday, May 9, 2026</h3>
+                            <button onclick="changeDay(1)"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                        <button class="btn btn-outline" style="font-size:0.85rem;" onclick="goToToday()">Today</button>
+                    </div>
+                    <div class="time-slots" id="daySlotsContainer"></div>
+                </div>
+
+                <!-- Week View (hidden by default) -->
+                <div id="weekView" class="card" style="display:none;">
+                    <div class="calendar-header">
+                        <div class="calendar-nav">
+                            <button onclick="changeWeek(-1)"><i class="fas fa-chevron-left"></i></button>
+                            <h3 style="margin:0;font-size:1.1rem;" id="weekViewTitle">Week of May 5 – 11, 2026</h3>
+                            <button onclick="changeWeek(1)"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <div id="weekCalendar" style="display:grid;grid-template-columns:70px repeat(7, 1fr);gap:0;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;min-width:700px;"></div>
+                    </div>
+                </div>
+
+                <!-- Month View (hidden by default) -->
+                <div id="monthView" class="card" style="display:none;">
+                    <div class="calendar-header">
+                        <div class="calendar-nav">
+                            <button onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
+                            <h3 style="margin:0;font-size:1.1rem;" id="monthViewTitle">May 2026</h3>
+                            <button onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    <div class="calendar-grid" id="monthCalendar"></div>
+                </div>
+
+                <!-- Upcoming list -->
+                <div class="card" style="margin-top:1.5rem;">
+                    <div class="card-header">
+                        <h3 class="card-title">Today's Patient Queue</h3>
+                        <span style="font-size:0.85rem;color:var(--text-muted);">May 9, 2026</span>
+                    </div>
+                    <div id="upcomingList"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- New Appointment Modal -->
+    <div class="modal-overlay" id="apptModal">
+        <div class="modal-content" id="apptModalContent">
+            <div class="modal-header">
+                <h3><i class="fas fa-calendar-plus" style="color:var(--primary);margin-right:8px;"></i>Schedule Appointment</h3>
+                <button class="close-modal" onclick="closeApptModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="form-group">
+                <label>Patient Name *</label>
+                <input type="text" class="form-control" id="apptPatient" placeholder="Search or type patient name" list="patientSuggestions">
+                <datalist id="patientSuggestions">
+                    <option value="Maria Gonzalez">
+                    <option value="Wei Chen">
+                    <option value="Amir Al-Fayed">
+                    <option value="Elena Rostova">
+                    <option value="Priya Sharma">
+                </datalist>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Date *</label>
+                    <input type="date" class="form-control" id="apptDate">
+                </div>
+                <div class="form-group">
+                    <label>Time *</label>
+                    <select class="form-control" id="apptTime">
+                        <option>7:00 AM</option><option>7:30 AM</option><option>8:00 AM</option><option>8:30 AM</option>
+                        <option>9:00 AM</option><option>9:30 AM</option><option>10:00 AM</option><option>10:30 AM</option>
+                        <option>11:00 AM</option><option>11:30 AM</option><option>12:00 PM</option><option>1:00 PM</option>
+                        <option>1:30 PM</option><option>2:00 PM</option><option>2:30 PM</option><option>3:00 PM</option>
+                        <option>3:30 PM</option><option>4:00 PM</option><option>4:30 PM</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Appointment Type</label>
+                    <select class="form-control" id="apptType">
+                        <option>Follow-up Visit</option>
+                        <option>Initial Consult</option>
+                        <option>Routine Checkup</option>
+                        <option>Urgent Care</option>
+                        <option>Telehealth</option>
+                        <option>Lab / Bloodwork</option>
+                        <option>Prescription Review</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Patient Language</label>
+                    <select class="form-control" id="apptLang">
+                        <option>Spanish</option><option>Mandarin</option><option>Arabic</option>
+                        <option>Hindi</option><option>Russian</option><option>Tagalog</option><option>Vietnamese</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Notes</label>
+                <textarea class="form-control" id="apptNotes" rows="2" placeholder="Any special instructions or context..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeApptModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveAppointment()"><i class="fas fa-save"></i> Schedule</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const today = new Date(2026, 4, 9); // May 9, 2026
+        let currentDay = new Date(today);
+        let currentMonth = new Date(today);
+        let currentWeek = new Date(today);
+
+        const appointments = [
+            { time: '7:30 AM', patient: 'Elena Rostova', lang: 'Russian', type: 'Asthma Followup', duration: 30, status: 'completed' },
+            { time: '8:15 AM', patient: 'Amir Al-Fayed', lang: 'Arabic', type: 'Diabetes Mgmt', duration: 30, status: 'completed' },
+            { time: '9:30 AM', patient: 'Maria Gonzalez', lang: 'Spanish', type: 'Post-op Followup', duration: 45, status: 'scheduled' },
+            { time: '11:00 AM', patient: 'Wei Chen', lang: 'Mandarin', type: 'Cardiac Checkup', duration: 30, status: 'scheduled' },
+            { time: '2:00 PM', patient: 'Priya Sharma', lang: 'Hindi', type: 'Prenatal Visit', duration: 45, status: 'scheduled' },
+            { time: '3:30 PM', patient: 'Carlos Mendez', lang: 'Spanish', type: 'Cardiology Review', duration: 30, status: 'scheduled' }
+        ];
+
+        const hours = ['7:00 AM','7:30 AM','8:00 AM','8:30 AM','9:00 AM','9:30 AM','10:00 AM','10:30 AM','11:00 AM','11:30 AM','12:00 PM','1:00 PM','1:30 PM','2:00 PM','2:30 PM','3:00 PM','3:30 PM','4:00 PM','4:30 PM'];
+
+        function getLangClass(lang) { return lang.toLowerCase().split(' ')[0]; }
+
+        function renderDayView() {
+            document.getElementById('dayViewTitle').textContent = currentDay.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+            const isToday = currentDay.toDateString() === today.toDateString();
+            const container = document.getElementById('daySlotsContainer');
+            container.innerHTML = hours.map(h => {
+                const appt = isToday ? appointments.find(a => a.time === h) : null;
+                return `
+                    <div class="time-slot">
+                        <div class="time-label">${h}</div>
+                        <div class="slot-content">
+                            ${appt ? `
+                                <div class="appt-block ${getLangClass(appt.lang)}" onclick="launchSession('${appt.patient}','${appt.lang}')">
+                                    <div class="appt-block-name">${appt.patient} <span class="status-badge status-${appt.status}" style="font-size:0.65rem;padding:2px 7px;">${appt.status}</span></div>
+                                    <div class="appt-block-sub">${appt.type} • ${appt.lang} • ${appt.duration} min</div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderUpcoming() {
+            const list = document.getElementById('upcomingList');
+            list.innerHTML = appointments.map(a => `
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem;border-bottom:1px solid var(--bg-light);">
+                    <div style="display:flex;align-items:center;gap:1rem;">
+                        <div style="width:50px;text-align:center;font-weight:700;font-size:0.85rem;color:var(--primary);">${a.time.replace(' AM','').replace(' PM', a.time.includes('PM') ? '<span style="font-size:0.7rem"> PM</span>' : '<span style="font-size:0.7rem"> AM</span>')}</div>
+                        <div>
+                            <div style="font-weight:600">${a.patient}</div>
+                            <div style="font-size:0.8rem;color:var(--text-muted)">${a.type} • ${a.duration} min</div>
+                        </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:0.8rem;">
+                        <span style="font-size:0.75rem;font-weight:600;padding:3px 10px;border-radius:12px;background:${langBg(a.lang)};color:${langColor(a.lang)}">${a.lang}</span>
+                        ${a.status === 'scheduled' ? `<button class="btn btn-primary" style="padding:0.3rem 0.8rem;font-size:0.8rem;" onclick="launchSession('${a.patient}','${a.lang}')"><i class="fas fa-phone-volume"></i> Start</button>` : `<span class="status-badge status-completed">Completed</span>`}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        const langBg = l => ({ Spanish: '#fde', Mandarin: '#fef3e2', Arabic: '#e8f8f5', Hindi: '#f3e5f5', Russian: '#ebf5fb' }[l] || '#f0f0f0');
+        const langColor = l => ({ Spanish: '#c0392b', Mandarin: '#e67e22', Arabic: '#16a085', Hindi: '#8e44ad', Russian: '#2980b9' }[l] || '#666');
+
+        function launchSession(patient, lang) {
+            window.location.href = `translator.html?lang=${encodeURIComponent(lang)}&patient=${encodeURIComponent(patient)}`;
+        }
+
+        function renderMonthView() {
+            document.getElementById('monthViewTitle').textContent = currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            const grid = document.getElementById('monthCalendar');
+            const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+            const first = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+            const last = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+            let html = days.map(d => `<div class="cal-day-header">${d}</div>`).join('');
+            for (let i = 0; i < first.getDay(); i++) html += `<div class="cal-day other-month"></div>`;
+            for (let d = 1; d <= last.getDate(); d++) {
+                const isToday = (d === today.getDate() && currentMonth.getMonth() === today.getMonth() && currentMonth.getFullYear() === today.getFullYear());
+                const appts = (isToday ? appointments.filter(a => a.status === 'scheduled') : []);
+                html += `<div class="cal-day ${isToday ? 'today' : ''}">
+                    <div class="cal-day-num">${d}</div>
+                    ${appts.slice(0,2).map(a => `<div class="cal-appt appt-${getLangClass(a.lang)}">${a.time} ${a.patient.split(' ')[0]}</div>`).join('')}
+                    ${appts.length > 2 ? `<div style="font-size:0.65rem;color:var(--text-muted)">+${appts.length - 2} more</div>` : ''}
+                </div>`;
+            }
+            grid.innerHTML = html;
+        }
+
+        function switchView(view, btn) {
+            document.querySelectorAll('.view-toggle button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            ['dayView','weekView','monthView'].forEach(v => document.getElementById(v).style.display = 'none');
+            document.getElementById(view + 'View').style.display = 'block';
+            if (view === 'month') renderMonthView();
+        }
+
+        function changeDay(n) { currentDay.setDate(currentDay.getDate() + n); renderDayView(); }
+        function changeMonth(n) { currentMonth.setMonth(currentMonth.getMonth() + n); renderMonthView(); }
+        function changeWeek(n) { currentWeek.setDate(currentWeek.getDate() + n * 7); }
+        function goToToday() { currentDay = new Date(today); renderDayView(); }
+
+        // Modal
+        document.getElementById('newApptBtn').addEventListener('click', () => {
+            const d = today.toISOString().split('T')[0];
+            document.getElementById('apptDate').value = d;
+            openApptModal();
+        });
+
+        function openApptModal() {
+            const modal = document.getElementById('apptModal');
+            const content = document.getElementById('apptModalContent');
+            modal.style.display = 'flex';
+            setTimeout(() => { modal.style.opacity = '1'; content.classList.add('active'); }, 10);
+        }
+
+        function closeApptModal() {
+            const modal = document.getElementById('apptModal');
+            modal.style.opacity = '0';
+            document.getElementById('apptModalContent').classList.remove('active');
+            setTimeout(() => modal.style.display = 'none', 300);
+        }
+
+        function saveAppointment() {
+            const patient = document.getElementById('apptPatient').value;
+            const time = document.getElementById('apptTime').value;
+            const lang = document.getElementById('apptLang').value;
+            const type = document.getElementById('apptType').value;
+            if (!patient) { alert('Please enter a patient name.'); return; }
+            appointments.push({ time, patient, lang, type, duration: 30, status: 'scheduled' });
+            closeApptModal();
+            renderDayView();
+            renderUpcoming();
+            alert(`✅ Appointment for ${patient} scheduled at ${time}`);
+        }
+
+        document.getElementById('apptModal').addEventListener('click', e => { if (e.target === document.getElementById('apptModal')) closeApptModal(); });
+
+        // Init
+        renderDayView();
+        renderUpcoming();
+    </script>
+</body>
+</html>

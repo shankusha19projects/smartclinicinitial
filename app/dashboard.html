@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - SmartClinics AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="dashboard.html" class="sidebar-logo">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M40 20 H60 V40 H80 V60 H60 V80 H40 V60 H20 V40 H40 Z" fill="white" opacity="0.9"/>
+                        <path d="M70 15 Q 90 15 90 35 Q 90 50 80 55 L 85 70 L 65 60 Q 55 65 40 65 Q 20 65 20 45 Q 20 25 40 25 M30 45 H80" fill="none" stroke="#2Ecc71" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="45" cy="45" r="4" fill="#2Ecc71"/>
+                        <circle cx="65" cy="45" r="4" fill="#2Ecc71"/>
+                    </svg>
+                    SmartClinics AI
+                </a>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="dashboard.html" class="nav-item active"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li><a href="patients.html" class="nav-item"><i class="fas fa-users"></i> Patients</a></li>
+                    <li><a href="appointments.html" class="nav-item"><i class="far fa-calendar-alt"></i> Appointments</a></li>
+                    <li><a href="history.html" class="nav-item"><i class="fas fa-history"></i> Translation History</a></li>
+                    <li><a href="analytics.html" class="nav-item"><i class="fas fa-chart-line"></i> Analytics</a></li>
+                </ul>
+                
+                <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05);">
+                    <ul>
+                        <li><a href="settings.html" class="nav-item"><i class="fas fa-cog"></i> Settings</a></li>
+                        <li><a href="receptionist.html" class="nav-item"><i class="fas fa-headset"></i> Receptionist View</a></li>
+                    </ul>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <img src="https://images.unsplash.com/photo-1594824436998-d8ac09c316af?auto=format&fit=crop&q=80&w=150&h=150" alt="Dr. Sarah Chen" class="avatar">
+                    <div class="user-info">
+                        <span class="user-name">Dr. Sarah Chen</span>
+                        <span class="user-role">Cardiologist</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="main-wrapper">
+            <!-- Top Header -->
+            <header class="top-header">
+                <button class="sidebar-toggle" aria-label="Toggle navigation">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search patients, ID, or History...">
+                </div>
+
+                <div class="header-actions">
+                    <button class="icon-btn" title="Language Settings">
+                        <i class="fas fa-language"></i>
+                    </button>
+                    <button class="icon-btn" title="Notifications">
+                        <i class="far fa-bell"></i>
+                        <span class="badge">3</span>
+                    </button>
+                    <button class="btn btn-outline ehr-sync-btn" style="padding: 0.4rem 1rem;">
+                        <i class="fas fa-external-link-alt" style="margin-right: 5px;"></i><span class="ehr-sync-label">EHR Sync Active</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Scrollable Content -->
+            <div class="main-content">
+                <div class="page-title">
+                    <span>Good Morning, Dr. Chen</span>
+                    <button class="btn btn-primary" id="openSessionModalBtn">
+                        <i class="fas fa-plus"></i> New Translation Session
+                    </button>
+                </div>
+
+                <!-- Quick Action Banner -->
+                <div class="quick-action-panel">
+                    <div>
+                        <h3 style="margin-bottom: 0.5rem; font-size: 1.25rem;">Upcoming patient requires Spanish translation</h3>
+                        <p style="color: rgba(255,255,255,0.8); margin-bottom: 0;">Maria Gonzalez (9:30 AM) - Post-op Followup</p>
+                    </div>
+                    <button class="btn btn-primary" style="background-color: white; color: var(--secondary);" onclick="openSessionModal('Spanish', 'Maria Gonzalez (9:30 AM)')">
+                        Prepare Session
+                    </button>
+                </div>
+
+                <!-- Stats -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background-color: rgba(74, 144, 226, 0.1); color: var(--primary);">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-value">12</span>
+                            <span class="stat-label">Translations Today</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background-color: rgba(46, 204, 113, 0.1); color: var(--accent);">
+                            <i class="far fa-clock"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-value">4.5h</span>
+                            <span class="stat-label">Interpreter Time Saved</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background-color: rgba(241, 196, 15, 0.1); color: var(--warning);">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-value">325ms</span>
+                            <span class="stat-label">Avg Connection Latency</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background-color: rgba(142, 68, 173, 0.1); color: #8e44ad;">
+                            <i class="fas fa-file-medical-alt"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-value">8</span>
+                            <span class="stat-label">EHR Exports Pending</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity Table -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Today's Schedule & Recent Sessions</h3>
+                        <a href="#" style="font-size: 0.9rem; font-weight: 500;">View Full Schedule</a>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Patient</th>
+                                    <th>Time</th>
+                                    <th>Preferred Language</th>
+                                    <th>Status / Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div style="font-weight: 600;">Maria Gonzalez</div>
+                                        <div style="font-size: 0.8rem; color: var(--text-muted);">DOB: 05/12/1954 • ID: #PT-8421</div>
+                                    </td>
+                                    <td>09:30 AM</td>
+                                    <td>Spanish (Mexico)</td>
+                                    <td><button class="btn btn-primary" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;" onclick="openSessionModal('Spanish', 'Maria Gonzalez')">Start Translation</button></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div style="font-weight: 600;">Wei Chen</div>
+                                        <div style="font-size: 0.8rem; color: var(--text-muted);">DOB: 11/04/1982 • ID: #PT-7732</div>
+                                    </td>
+                                    <td>11:00 AM</td>
+                                    <td>Mandarin</td>
+                                    <td><span class="status-badge status-scheduled">Scheduled</span></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div style="font-weight: 600;">Amir Al-Fayed</div>
+                                        <div style="font-size: 0.8rem; color: var(--text-muted);">DOB: 02/28/1975 • ID: #PT-9102</div>
+                                    </td>
+                                    <td>08:15 AM (Completed)</td>
+                                    <td>Arabic</td>
+                                    <td>
+                                        <div class="flex gap-1">
+                                            <span class="status-badge status-completed">Completed (18m)</span>
+                                            <button class="btn btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;"><i class="fas fa-file-export"></i> EHR</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div style="font-weight: 600;">Elena Rostova</div>
+                                        <div style="font-size: 0.8rem; color: var(--text-muted);">DOB: 09/15/1968 • ID: #PT-6544</div>
+                                    </td>
+                                    <td>07:30 AM (Completed)</td>
+                                    <td>Russian</td>
+                                    <td>
+                                        <div class="flex gap-1">
+                                            <span class="status-badge status-completed">Completed (22m)</span>
+                                            <button class="btn btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;"><i class="fas fa-file-export"></i> EHR</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Generate Session Modal -->
+    <div class="modal-overlay" id="sessionModal">
+        <div class="modal-content" id="sessionModalContent">
+            <div class="modal-header">
+                <h3>Start New Translation Session</h3>
+                <button class="close-modal" id="closeModalBtn"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="form-group">
+                <label>Patient Context / Name (Optional)</label>
+                <input type="text" class="form-control" id="sessionPatientName" placeholder="e.g. Maria Gonzalez">
+            </div>
+            
+            <div class="form-group">
+                <label>Provider Language</label>
+                <select class="form-control" id="providerLang">
+                    <option value="English" selected>English (US)</option>
+                    <option value="Spanish">Spanish</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Patient Target Language</label>
+                <select class="form-control" id="patientLang">
+                    <option value="Spanish">Spanish (All Dialects)</option>
+                    <option value="Mandarin">Mandarin Chinese</option>
+                    <option value="Arabic">Arabic</option>
+                    <option value="Hindi">Hindi</option>
+                    <option value="Russian">Russian</option>
+                    <option value="Tagalog">Tagalog</option>
+                    <option value="Vietnamese">Vietnamese</option>
+                </select>
+            </div>
+            
+            <div class="form-group" style="margin-top: 1.5rem; padding: 1rem; background: var(--bg-light); border-radius: var(--radius-sm); border-left: 3px solid var(--primary);">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin: 0;">
+                    <input type="checkbox" checked style="width: 18px; height: 18px; accent-color: var(--primary);">
+                    <span style="font-weight: 500;">Enable Live Subtitles / Transcript Generation</span>
+                </label>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px; margin-left: 28px;">Requires explicit patient consent per HIPAA guidelines.</p>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancelBtn">Cancel</button>
+                <button class="btn btn-primary" onclick="initiateSession()">
+                    <i class="fas fa-phone-volume"></i> Create Link & Start
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="sidebar-backdrop"></div>
+
+    <script src="app.js"></script>
+    <script>
+        // Inline Modal Logic
+        const modal = document.getElementById('sessionModal');
+        const modalContent = document.getElementById('sessionModalContent');
+        const openBtn = document.getElementById('openSessionModalBtn');
+        const closeBtn = document.getElementById('closeModalBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+
+        function openSessionModal(defaultLang = 'Spanish', defaultPatient = '') {
+            document.getElementById('patientLang').value = defaultLang;
+            document.getElementById('sessionPatientName').value = defaultPatient;
+            
+            modal.style.display = 'flex';
+            // Slight delay to allow display flex to apply before opacity transition
+            setTimeout(() => {
+                modal.style.opacity = '1';
+                modalContent.classList.add('active');
+            }, 10);
+        }
+
+        function closeModal() {
+            modal.style.opacity = '0';
+            modalContent.classList.remove('active');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+
+        openBtn.addEventListener('click', () => openSessionModal());
+        closeBtn.addEventListener('click', closeModal);
+        cancelBtn.addEventListener('click', closeModal);
+        
+        // Close on clicking outside modal
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        // Trigger session
+        function initiateSession() {
+            const pName = document.getElementById('sessionPatientName').value || 'Guest Patient';
+            const targetLang = document.getElementById('patientLang').value;
+            
+            // In a real app we'd create a session ID on backend. We pass context via URL in this prototype.
+            window.location.href = `translator.html?lang=${encodeURIComponent(targetLang)}&patient=${encodeURIComponent(pName)}`;
+        }
+    </script>
+</body>
+</html>

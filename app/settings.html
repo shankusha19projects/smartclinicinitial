@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - SmartClinics AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .settings-layout { display: grid; grid-template-columns: 220px 1fr; gap: 1.5rem; }
+        .settings-nav { background: white; border-radius: var(--radius-md); border: 1px solid var(--border); padding: 1rem 0; height: fit-content; }
+        .settings-nav-item { display: flex; align-items: center; gap: 10px; padding: 0.8rem 1.5rem; font-size: 0.9rem; font-weight: 500; color: var(--text-muted); cursor: pointer; transition: var(--transition); }
+        .settings-nav-item:hover, .settings-nav-item.active { background: var(--primary-bg); color: var(--primary); }
+        .settings-nav-item i { width: 18px; text-align: center; }
+        .settings-panel { display: none; }
+        .settings-panel.active { display: block; }
+        .settings-section { background: white; border-radius: var(--radius-md); border: 1px solid var(--border); padding: 2rem; margin-bottom: 1.5rem; }
+        .settings-section h3 { margin: 0 0 0.5rem 0; font-size: 1rem; }
+        .settings-section p.desc { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+        .form-group { margin-bottom: 1.2rem; }
+        .form-group label { display: block; margin-bottom: 0.4rem; font-weight: 600; font-size: 0.85rem; color: var(--secondary); }
+        .form-control { width: 100%; padding: 0.7rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.95rem; font-family: inherit; color: var(--text-main); }
+        .form-control:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(74,144,226,0.1); }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px solid var(--bg-light); }
+        .toggle-row:last-child { border-bottom: none; }
+        .toggle-label h4 { margin: 0; font-size: 0.95rem; }
+        .toggle-label p { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
+        .toggle-switch { position: relative; width: 44px; height: 24px; cursor: pointer; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border); border-radius: 24px; transition: 0.3s; }
+        .slider:before { content: ''; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: 0.3s; }
+        .toggle-switch input:checked + .slider { background-color: var(--primary); }
+        .toggle-switch input:checked + .slider:before { transform: translateX(20px); }
+        .integration-card { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem; border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 1rem; }
+        .integration-card:last-child { margin-bottom: 0; }
+        .integration-info { display: flex; align-items: center; gap: 1rem; }
+        .integration-logo { width: 44px; height: 44px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-weight: 800; color: white; font-size: 0.8rem; }
+        .danger-zone { border-color: rgba(176,50,40,0.3); background: rgba(176,50,40,0.02); }
+        .danger-zone h3 { color: var(--danger); }
+        .btn-danger { background: var(--danger); color: white; border: none; }
+        .btn-danger:hover { background: #a02a21; }
+        .avatar-upload { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem; }
+        .avatar-preview { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-bg); }
+        .section-divider { height: 1px; background: var(--border); margin: 1.5rem 0; }
+        .badge-new { background: var(--primary); color: white; font-size: 0.65rem; padding: 2px 6px; border-radius: 10px; font-weight: 700; margin-left: 4px; vertical-align: middle; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="dashboard.html" class="sidebar-logo">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M40 20 H60 V40 H80 V60 H60 V80 H40 V60 H20 V40 H40 Z" fill="white" opacity="0.9"/><path d="M70 15 Q 90 15 90 35 Q 90 50 80 55 L 85 70 L 65 60 Q 55 65 40 65 Q 20 65 20 45 Q 20 25 40 25 M30 45 H80" fill="none" stroke="#2Ecc71" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="45" cy="45" r="4" fill="#2Ecc71"/><circle cx="65" cy="45" r="4" fill="#2Ecc71"/></svg>
+                    SmartClinics AI
+                </a>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li><a href="patients.html" class="nav-item"><i class="fas fa-users"></i> Patients</a></li>
+                    <li><a href="appointments.html" class="nav-item"><i class="far fa-calendar-alt"></i> Appointments</a></li>
+                    <li><a href="history.html" class="nav-item"><i class="fas fa-history"></i> Translation History</a></li>
+                    <li><a href="analytics.html" class="nav-item"><i class="fas fa-chart-line"></i> Analytics</a></li>
+                </ul>
+                <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05);">
+                    <ul>
+                        <li><a href="settings.html" class="nav-item active"><i class="fas fa-cog"></i> Settings</a></li>
+                        <li><a href="receptionist.html" class="nav-item"><i class="fas fa-headset"></i> Receptionist View</a></li>
+                    </ul>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <img src="https://images.unsplash.com/photo-1594824436998-d8ac09c316af?auto=format&fit=crop&q=80&w=150&h=150" alt="Dr. Sarah Chen" class="avatar">
+                    <div class="user-info">
+                        <span class="user-name">Dr. Sarah Chen</span>
+                        <span class="user-role">Cardiologist</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-wrapper">
+            <header class="top-header">
+                <button class="sidebar-toggle" aria-label="Toggle navigation">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div style="font-size:1.1rem;font-weight:600;color:var(--secondary)">Settings</div>
+                <div class="header-actions">
+                    <button class="btn btn-primary" id="saveAllBtn" onclick="saveSettings()"><i class="fas fa-save"></i> Save Changes</button>
+                </div>
+            </header>
+
+            <div class="main-content">
+                <div class="settings-layout">
+                    <!-- Settings Nav -->
+                    <div class="settings-nav">
+                        <div class="settings-nav-item active" onclick="switchTab('profile', this)"><i class="fas fa-user-circle"></i> Profile</div>
+                        <div class="settings-nav-item" onclick="switchTab('translation', this)"><i class="fas fa-language"></i> Translation</div>
+                        <div class="settings-nav-item" onclick="switchTab('notifications', this)"><i class="far fa-bell"></i> Notifications</div>
+                        <div class="settings-nav-item" onclick="switchTab('integrations', this)"><i class="fas fa-plug"></i> Integrations</div>
+                        <div class="settings-nav-item" onclick="switchTab('security', this)"><i class="fas fa-shield-alt"></i> Security</div>
+                        <div class="settings-nav-item" onclick="switchTab('billing', this)"><i class="fas fa-credit-card"></i> Billing</div>
+                        <div class="settings-nav-item" onclick="switchTab('team', this)"><i class="fas fa-users-cog"></i> Team</div>
+                    </div>
+
+                    <!-- Settings Panels -->
+                    <div>
+                        <!-- Profile Panel -->
+                        <div class="settings-panel active" id="panel-profile">
+                            <div class="settings-section">
+                                <h3>Provider Profile</h3>
+                                <p class="desc">Manage your personal information and credentials.</p>
+                                <div class="avatar-upload">
+                                    <img src="https://images.unsplash.com/photo-1594824436998-d8ac09c316af?auto=format&fit=crop&q=80&w=150&h=150" alt="Profile" class="avatar-preview">
+                                    <div>
+                                        <button class="btn btn-outline" style="font-size:0.85rem;">Upload New Photo</button>
+                                        <div style="font-size:0.75rem;color:var(--text-muted);margin-top:6px">JPG, PNG. Max 2MB</div>
+                                    </div>
+                                </div>
+                                <div class="form-grid">
+                                    <div class="form-group"><label>First Name</label><input type="text" class="form-control" value="Sarah"></div>
+                                    <div class="form-group"><label>Last Name</label><input type="text" class="form-control" value="Chen"></div>
+                                    <div class="form-group"><label>Title / Specialty</label><input type="text" class="form-control" value="Cardiologist, MD"></div>
+                                    <div class="form-group"><label>NPI Number</label><input type="text" class="form-control" value="1234567890"></div>
+                                    <div class="form-group"><label>Email</label><input type="email" class="form-control" value="s.chen@smartclinic.ai"></div>
+                                    <div class="form-group"><label>Phone</label><input type="tel" class="form-control" value="(908) 555-0100"></div>
+                                </div>
+                                <div class="form-group"><label>Bio / Introduction</label>
+                                    <textarea class="form-control" rows="3">Board-certified cardiologist with 15 years experience. Specializes in preventive cardiology and heart failure management.</textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Translation Panel -->
+                        <div class="settings-panel" id="panel-translation">
+                            <div class="settings-section">
+                                <h3>Translation Preferences</h3>
+                                <p class="desc">Configure how the AI translates during sessions.</p>
+                                <div class="form-grid">
+                                    <div class="form-group"><label>Default Provider Language</label>
+                                        <select class="form-control"><option selected>English (US)</option><option>Spanish</option><option>French</option></select>
+                                    </div>
+                                    <div class="form-group"><label>AI Translation Model</label>
+                                        <select class="form-control"><option>Auto (Best Available)</option><option>OpenAI GPT-4o</option><option>Google Gemini</option><option>AWS Bedrock</option></select>
+                                    </div>
+                                    <div class="form-group"><label>Translation Formality</label>
+                                        <select class="form-control"><option>Clinical (Formal)</option><option>Conversational</option><option>Simple / Plain Language</option></select>
+                                    </div>
+                                    <div class="form-group"><label>Emergency Detection Sensitivity</label>
+                                        <select class="form-control"><option>High (Recommended)</option><option>Medium</option><option>Low</option></select>
+                                    </div>
+                                </div>
+                                <div class="section-divider"></div>
+                                <div class="toggle-row">
+                                    <div class="toggle-label"><h4>Live Subtitles / Captions</h4><p>Display real-time translated text on screen during sessions</p></div>
+                                    <label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label>
+                                </div>
+                                <div class="toggle-row">
+                                    <div class="toggle-label"><h4>Speaker Diarization</h4><p>Automatically separate doctor and patient voices</p></div>
+                                    <label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label>
+                                </div>
+                                <div class="toggle-row">
+                                    <div class="toggle-label"><h4>Auto Session Transcription</h4><p>Save full transcript after every session (requires consent)</p></div>
+                                    <label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label>
+                                </div>
+                                <div class="toggle-row">
+                                    <div class="toggle-label"><h4>Emergency SMS Alerts</h4><p>Send SMS to on-call staff when emergency keyword is detected</p></div>
+                                    <label class="toggle-switch"><input type="checkbox"><span class="slider"></span></label>
+                                </div>
+                            </div>
+                            <div class="settings-section">
+                                <h3>Medical Terminology Glossary</h3>
+                                <p class="desc">Custom terms to ensure consistent specialized translation.</p>
+                                <div id="glossaryList">
+                                    <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;"><input type="text" class="form-control" value="Myocardial infarction" style="flex:1;"><input type="text" class="form-control" value="Infarto de miocardio" style="flex:1;"><button class="btn btn-outline" style="padding:0.6rem;font-size:0.8rem;" onclick="this.parentElement.remove()"><i class="fas fa-trash"></i></button></div>
+                                    <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;"><input type="text" class="form-control" value="Echocardiogram" style="flex:1;"><input type="text" class="form-control" value="Ecocardiograma" style="flex:1;"><button class="btn btn-outline" style="padding:0.6rem;font-size:0.8rem;" onclick="this.parentElement.remove()"><i class="fas fa-trash"></i></button></div>
+                                </div>
+                                <button class="btn btn-outline" style="margin-top:0.8rem;font-size:0.85rem;" onclick="addGlossaryRow()"><i class="fas fa-plus"></i> Add Term</button>
+                            </div>
+                        </div>
+
+                        <!-- Notifications Panel -->
+                        <div class="settings-panel" id="panel-notifications">
+                            <div class="settings-section">
+                                <h3>Notification Preferences</h3>
+                                <p class="desc">Choose when and how you receive alerts.</p>
+                                <div class="toggle-row"><div class="toggle-label"><h4>Appointment Reminders</h4><p>24h and 1h before scheduled appointments</p></div><label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+                                <div class="toggle-row"><div class="toggle-label"><h4>Emergency Detection Alerts</h4><p>Immediate notification when emergency keywords are detected</p></div><label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+                                <div class="toggle-row"><div class="toggle-label"><h4>Session Summary Ready</h4><p>Notify when AI-generated session summary is available</p></div><label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+                                <div class="toggle-row"><div class="toggle-label"><h4>EHR Export Confirmation</h4><p>Confirm when session data is successfully synced to EHR</p></div><label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+                                <div class="toggle-row"><div class="toggle-label"><h4>Weekly Usage Reports</h4><p>Receive weekly analytics digest via email</p></div><label class="toggle-switch"><input type="checkbox"><span class="slider"></span></label></div>
+                                <div class="toggle-row"><div class="toggle-label"><h4>Marketing & Product Updates</h4><p>Feature announcements and product news</p></div><label class="toggle-switch"><input type="checkbox"><span class="slider"></span></label></div>
+                            </div>
+                        </div>
+
+                        <!-- Integrations Panel -->
+                        <div class="settings-panel" id="panel-integrations">
+                            <div class="settings-section">
+                                <h3>EHR Integrations</h3>
+                                <p class="desc">Connect SmartClinics AI with your existing EHR platform.</p>
+                                <div class="integration-card">
+                                    <div class="integration-info">
+                                        <div class="integration-logo" style="background:#9B1616">Ep</div>
+                                        <div><div style="font-weight:600">Epic</div><div style="font-size:0.8rem;color:var(--text-muted)">Connected • FHIR R4</div></div>
+                                    </div>
+                                    <div class="flex gap-1">
+                                        <span class="status-badge status-completed">Active</span>
+                                        <button class="btn btn-outline" style="font-size:0.8rem;padding:0.3rem 0.7rem;">Configure</button>
+                                    </div>
+                                </div>
+                                <div class="integration-card">
+                                    <div class="integration-info">
+                                        <div class="integration-logo" style="background:#0079A6">Ce</div>
+                                        <div><div style="font-weight:600">Cerner / Oracle Health</div><div style="font-size:0.8rem;color:var(--text-muted)">Not connected</div></div>
+                                    </div>
+                                    <button class="btn btn-primary" style="font-size:0.8rem;padding:0.4rem 1rem;">Connect</button>
+                                </div>
+                                <div class="integration-card">
+                                    <div class="integration-info">
+                                        <div class="integration-logo" style="background:#8C2633">at</div>
+                                        <div><div style="font-weight:600">athenahealth</div><div style="font-size:0.8rem;color:var(--text-muted)">Not connected</div></div>
+                                    </div>
+                                    <button class="btn btn-primary" style="font-size:0.8rem;padding:0.4rem 1rem;">Connect</button>
+                                </div>
+                            </div>
+                            <div class="settings-section">
+                                <h3>Communication Integrations</h3>
+                                <p class="desc">Manage SMS, video, and messaging platform connections.</p>
+                                <div class="integration-card">
+                                    <div class="integration-info">
+                                        <div class="integration-logo" style="background:#f22f46">Tw</div>
+                                        <div><div style="font-weight:600">Twilio (SMS/Voice)</div><div style="font-size:0.8rem;color:var(--text-muted)">Connected • +1 (844) 555-0100</div></div>
+                                    </div>
+                                    <span class="status-badge status-completed">Active</span>
+                                </div>
+                                <div class="integration-card">
+                                    <div class="integration-info">
+                                        <div class="integration-logo" style="background:#1A5FCC">Zm</div>
+                                        <div><div style="font-weight:600">Zoom (Video)</div><div style="font-size:0.8rem;color:var(--text-muted)">Connected • HIPAA account</div></div>
+                                    </div>
+                                    <span class="status-badge status-completed">Active</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Security Panel -->
+                        <div class="settings-panel" id="panel-security">
+                            <div class="settings-section">
+                                <h3>Security & Authentication</h3>
+                                <p class="desc">Protect your account and patient data.</p>
+                                <div class="form-group"><label>Current Password</label><input type="password" class="form-control" placeholder="••••••••"></div>
+                                <div class="form-grid">
+                                    <div class="form-group"><label>New Password</label><input type="password" class="form-control" placeholder="••••••••"></div>
+                                    <div class="form-group"><label>Confirm Password</label><input type="password" class="form-control" placeholder="••••••••"></div>
+                                </div>
+                                <div class="section-divider"></div>
+                                <div class="toggle-row"><div class="toggle-label"><h4>Two-Factor Authentication (2FA)</h4><p>Recommended for all healthcare providers (HIPAA)</p></div><label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+                                <div class="toggle-row"><div class="toggle-label"><h4>Biometric Login</h4><p>Use Face ID / fingerprint on mobile devices <span class="badge-new">NEW</span></p></div><label class="toggle-switch"><input type="checkbox"><span class="slider"></span></label></div>
+                                <div class="toggle-row"><div class="toggle-label"><h4>Session Auto-Logout</h4><p>Automatically log out after 30 minutes of inactivity</p></div><label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label></div>
+                            </div>
+                            <div class="settings-section danger-zone">
+                                <h3><i class="fas fa-exclamation-triangle" style="margin-right:8px;"></i>Danger Zone</h3>
+                                <p class="desc">Irreversible actions. Proceed with caution.</p>
+                                <button class="btn btn-danger" style="font-size:0.85rem;" onclick="alert('This action would delete all data. Contact support@smartclinics.ai')"><i class="fas fa-trash"></i> Delete Account & All Data</button>
+                            </div>
+                        </div>
+
+                        <!-- Billing Panel -->
+                        <div class="settings-panel" id="panel-billing">
+                            <div class="settings-section">
+                                <h3>Current Plan</h3>
+                                <div style="display:flex;align-items:center;justify-content:space-between;padding:1.5rem;background:var(--primary-bg);border-radius:var(--radius-sm);border:1px solid var(--primary-light);">
+                                    <div>
+                                        <div style="font-size:1.5rem;font-weight:800;color:var(--primary)">Professional</div>
+                                        <div style="color:var(--text-muted);font-size:0.9rem">20 languages • 2,000 min/mo • EHR Sync • Priority Support</div>
+                                    </div>
+                                    <div style="text-align:right;">
+                                        <div style="font-size:2rem;font-weight:800;color:var(--secondary)">$199<span style="font-size:0.9rem;font-weight:400;">/mo</span></div>
+                                        <div style="font-size:0.8rem;color:var(--text-muted)">Next bill: June 1, 2026</div>
+                                    </div>
+                                </div>
+                                <div style="margin-top:1rem;display:flex;gap:1rem;">
+                                    <button class="btn btn-outline">Change Plan</button>
+                                    <button class="btn btn-outline" style="color:var(--danger);border-color:var(--danger)">Cancel Subscription</button>
+                                </div>
+                            </div>
+                            <div class="settings-section">
+                                <h3>Usage This Month</h3>
+                                <div style="margin-bottom:1rem;">
+                                    <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>Translation Minutes</span><span style="font-weight:700">1,423 / 2,000 min</span></div>
+                                    <div style="height:8px;background:var(--bg-light);border-radius:4px;overflow:hidden;"><div style="height:100%;width:71%;background:var(--primary);border-radius:4px;"></div></div>
+                                </div>
+                                <div style="margin-bottom:1rem;">
+                                    <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>Active Sessions This Month</span><span style="font-weight:700">342 sessions</span></div>
+                                    <div style="height:8px;background:var(--bg-light);border-radius:4px;overflow:hidden;"><div style="height:100%;width:68%;background:var(--accent-decorative);border-radius:4px;"></div></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Team Panel -->
+                        <div class="settings-panel" id="panel-team">
+                            <div class="settings-section">
+                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                                    <div><h3 style="margin:0">Team Members</h3><p class="desc" style="margin-bottom:0">Manage access for your clinic staff.</p></div>
+                                    <button class="btn btn-primary" style="font-size:0.85rem;" onclick="inviteTeam()"><i class="fas fa-user-plus"></i> Invite</button>
+                                </div>
+                                <div id="teamList">
+                                    ${buildTeamMember('Dr. Sarah Chen', 'sarah.chen@clinic.ai', 'Admin', 'Active', 'https://images.unsplash.com/photo-1594824436998-d8ac09c316af?auto=format&fit=crop&q=80&w=60')}
+                                    ${buildTeamMember('Dr. James Washington', 'j.washington@clinic.ai', 'Provider', 'Active', 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=60')}
+                                    ${buildTeamMember('Maria Lopez', 'm.lopez@clinic.ai', 'Receptionist', 'Active', '')}
+                                    ${buildTeamMember('Alex Kim', 'a.kim@clinic.ai', 'Receptionist', 'Pending', '')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="sidebar-backdrop"></div>
+
+    <script src="app.js"></script>
+    <script>
+        function buildTeamMember(name, email, role, status, img) {
+            const initials = name.split(' ').map(n=>n[0]).join('').slice(0,2);
+            return `<div style="display:flex;align-items:center;justify-content:space-between;padding:1rem;border-bottom:1px solid var(--bg-light);">
+                <div style="display:flex;align-items:center;gap:1rem;">
+                    ${img ? `<img src="${img}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">` : `<div style="width:40px;height:40px;border-radius:50%;background:var(--primary-bg);color:var(--primary);display:flex;align-items:center;justify-content:center;font-weight:700">${initials}</div>`}
+                    <div><div style="font-weight:600">${name}</div><div style="font-size:0.8rem;color:var(--text-muted)">${email}</div></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:0.8rem;">
+                    <select style="padding:0.4rem 0.8rem;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:0.8rem;font-family:inherit">
+                        <option ${role==='Admin'?'selected':''}>Admin</option>
+                        <option ${role==='Provider'?'selected':''}>Provider</option>
+                        <option ${role==='Receptionist'?'selected':''}>Receptionist</option>
+                    </select>
+                    <span class="status-badge ${status==='Active'?'status-completed':'status-scheduled'}">${status}</span>
+                </div>
+            </div>`;
+        }
+
+        function switchTab(name, el) {
+            document.querySelectorAll('.settings-nav-item').forEach(i => i.classList.remove('active'));
+            document.querySelectorAll('.settings-panel').forEach(p => p.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById('panel-' + name).classList.add('active');
+        }
+
+        function saveSettings() {
+            const btn = document.getElementById('saveAllBtn');
+            btn.innerHTML = '<i class="fas fa-check"></i> Saved!';
+            btn.style.background = '#1A7035';
+            setTimeout(() => { btn.innerHTML = '<i class="fas fa-save"></i> Save Changes'; btn.style.background = ''; }, 2000);
+        }
+
+        function addGlossaryRow() {
+            const list = document.getElementById('glossaryList');
+            const div = document.createElement('div');
+            div.style.cssText = 'display:flex;gap:0.5rem;margin-bottom:0.5rem;';
+            div.innerHTML = `<input type="text" class="form-control" placeholder="English term" style="flex:1;"><input type="text" class="form-control" placeholder="Translated term" style="flex:1;"><button class="btn btn-outline" style="padding:0.6rem;font-size:0.8rem;" onclick="this.parentElement.remove()"><i class="fas fa-trash"></i></button>`;
+            list.appendChild(div);
+        }
+
+        function inviteTeam() {
+            const email = prompt('Enter team member email address:');
+            if (email) alert(`Invitation sent to ${email}`);
+        }
+    </script>
+</body>
+</html>

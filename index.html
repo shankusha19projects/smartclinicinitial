@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartClinics AI - Real-Time Medical Translation</title>
+    <meta name="description" content="24/7 bilingual healthcare communication with 98.7% medical accuracy. Break language barriers with SmartClinics AI.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* Accessible colors (4.5:1+ on white) – used for all text & interactive */
+            --primary: #1558B0;           /* was #4A90E2 – 6.4:1 on white */
+            --accent:  #1A7035;           /* was #2Ecc71 – 5.7:1 on white */
+            --danger:  #B03228;           /* was #E74C3C – 6.1:1 on white */
+            /* Decorative-only variants (vibrant brand colours, icons/borders/bg fills) */
+            --primary-decorative: #4A90E2;
+            --accent-decorative:  #2Ecc71;
+            --danger-decorative:  #E74C3C;
+            --primary-light: #B8D9F5;
+            --primary-bg: #E6F3FF;
+            --secondary: #2C3E50;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --bg-light: #F8F9FA;
+            --bg-white: #FFFFFF;
+            --border: #E0E0E0;
+            --warning: #B8860B;           /* was #F1C40F – darkened for text use */
+            
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.18);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+            
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --radius-pill: 50px;
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: var(--font-family); color: var(--text-main); background-color: var(--bg-light); line-height: 1.6; }
+        a { text-decoration: none; color: var(--primary); transition: var(--transition); }
+        img { max-width: 100%; height: auto; display: block; }
+
+        h1, h2, h3, h4, h5, h6 { font-weight: 700; color: var(--secondary); line-height: 1.2; margin-bottom: 1rem; }
+        h1 { font-size: clamp(2.5rem, 5vw, 4rem); letter-spacing: -1px; }
+        h2 { font-size: clamp(2rem, 4vw, 3rem); text-align: center; margin-bottom: 3rem; }
+        h3 { font-size: clamp(1.5rem, 3vw, 2rem); }
+        p { margin-bottom: 1.5rem; }
+
+        .container { width: 100%; max-width: 1280px; margin: 0 auto; padding: 0 5%; }
+        .section { padding: 6rem 0; }
+        .section-light { background-color: var(--bg-white); }
+        .section-gray { background-color: var(--bg-light); }
+        .section-blue { background-color: var(--primary-bg); }
+        .section-dark { background-color: var(--secondary); color: var(--bg-white); }
+        .section-dark h2, .section-dark h3 { color: var(--bg-white); }
+
+        .text-center { text-align: center; }
+        .grid { display: grid; gap: 2rem; }
+        .grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+        .grid-3 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+        .grid-4 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+
+        .flex { display: flex; }
+        .flex-wrap { flex-wrap: wrap; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .align-center { align-items: center; }
+        .gap-1 { gap: 1rem; }
+        .gap-2 { gap: 2rem; }
+
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.8rem 1.8rem; border-radius: var(--radius-pill); font-weight: 600; font-size: 1rem; cursor: pointer; transition: var(--transition); border: 2px solid transparent; min-height: 44px; }
+        .btn-primary { background-color: var(--primary); color: white; box-shadow: 0 4px 14px rgba(21, 88, 176, 0.3); }
+        .btn-primary:hover, .btn-primary:focus { background-color: #0D3F80; transform: translateY(-2px); color: white; box-shadow: 0 6px 20px rgba(21, 88, 176, 0.4); }
+        .btn-secondary { background-color: transparent; color: var(--secondary); border-color: var(--secondary); }
+        .btn-secondary:hover, .btn-secondary:focus { background-color: var(--secondary); color: white; }
+        .btn-outline-white { background-color: transparent; color: white; border-color: white; }
+        .btn-outline-white:hover { background-color: white; color: var(--secondary); }
+        .btn-lg { padding: 1rem 2.5rem; font-size: 1.1rem; }
+
+        .glass-card { background: var(--glass-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); border-radius: var(--radius-lg); padding: 2.5rem; transition: var(--transition); }
+        .glass-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
+
+        *:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0; }
+
+        .navbar { position: fixed; top: 0; left: 0; width: 100%; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); z-index: 1000; box-shadow: 0 2px 15px rgba(0,0,0,0.05); padding: 1rem 0; transition: var(--transition); }
+        .nav-container { display: flex; justify-content: space-between; align-items: center; }
+        .logo { display: flex; align-items: center; gap: 12px; }
+        .logo svg { width: 40px; height: 40px; }
+        .logo-text { display: flex; flex-direction: column; }
+        .logo-title { font-size: 1.25rem; font-weight: 800; color: var(--secondary); line-height: 1; letter-spacing: -0.5px; }
+        .logo-subtitle { font-size: 0.65rem; font-weight: 500; color: var(--text-muted); line-height: 1.2; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .nav-links { display: flex; gap: 2rem; align-items: center; }
+        .nav-links a { color: var(--secondary); font-weight: 500; font-size: 0.95rem; }
+        .nav-links a:hover { color: var(--primary); }
+        .mobile-menu-btn { display: none; background: none; border: none; font-size: 1.5rem; color: var(--secondary); cursor: pointer; }
+
+        .hero { padding-top: 8rem; padding-bottom: 4rem; background: linear-gradient(135deg, var(--bg-white) 0%, var(--primary-bg) 100%); position: relative; overflow: hidden; }
+        .hero::before { content: ''; position: absolute; top: -20%; right: -10%; width: 600px; height: 600px; border-radius: 50%; background: radial-gradient(circle, rgba(74, 144, 226, 0.1) 0%, rgba(255,255,255,0) 70%); z-index: 0; }
+        .hero-container { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; position: relative; z-index: 1; }
+        .hero-content h1 { margin-bottom: 1.5rem; background: linear-gradient(90deg, var(--secondary) 0%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .hero-content p { font-size: 1.2rem; color: var(--text-muted); margin-bottom: 2.5rem; }
+
+        .hero-stats { margin-top: 3rem; display: flex; gap: 2rem; align-items: center; font-size: 0.9rem; color: var(--text-muted); padding-top: 1.5rem; border-top: 1px solid var(--border); }
+        .hero-stats i { color: var(--accent-decorative); margin-right: 0.5rem; }
+
+        .video-mockup { position: relative; border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.15); background: var(--secondary); aspect-ratio: 4/3; }
+        .video-split { display: flex; height: 100%; }
+        .video-pane { flex: 1; position: relative; background-size: cover; background-position: center; }
+        .doc-pane { background-image: url('https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=800'); border-right: 2px solid white; }
+        .patient-pane { background-image: url('https://images.unsplash.com/photo-1544027993-37dbd58eae8d?auto=format&fit=crop&q=80&w=800'); }
+        .translation-bubble { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); color: white; padding: 8px 15px; border-radius: 20px; font-size: 0.85rem; white-space: nowrap; animation: fadeInOut 4s infinite 2s; opacity: 0; }
+        .doc-bubble { animation: fadeInOut 4s infinite 0s; background: rgba(74, 144, 226, 0.9); }
+        
+        @keyframes fadeInOut { 0%, 10% { opacity: 0; transform: translateX(-50%) translateY(10px); } 20%, 80% { opacity: 1; transform: translateX(-50%) translateY(0); } 90%, 100% { opacity: 0; transform: translateX(-50%) translateY(-10px); } }
+
+        .trust-section { padding: 3rem 0; background: white; border-bottom: 1px solid var(--border); }
+        .compliance-row { display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 2rem; }
+        .compliance-badge { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; background: var(--bg-light); padding: 8px 16px; border-radius: var(--radius-pill); color: var(--secondary); border: 1px solid var(--border); }
+        .compliance-badge i { color: var(--accent-decorative); } .compliance-badge.ada i { color: var(--primary-decorative); }
+        .partner-logos { display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 2rem; opacity: 0.7; filter: grayscale(100%); transition: var(--transition); }
+        .partner-logos:hover { opacity: 1; filter: grayscale(0%); }
+        .partner-logos img { height: 35px; object-fit: contain; }
+
+        .problem-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-top: 3rem; }
+        .stat-card { text-align: center; padding: 2rem; }
+        .stat-num { font-size: 3rem; font-weight: 800; color: var(--danger); margin-bottom: 0.5rem; line-height: 1; /* --danger is now #B03228, 6.1:1 on white */ }
+        .stat-desc { font-size: 1.1rem; font-weight: 500; }
+        .comparison-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 4rem; }
+        .card-before { border-top: 4px solid var(--danger-decorative); } .card-after { border-top: 4px solid var(--accent-decorative); }
+        .compare-header { display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; font-size: 1.25rem; font-weight: 700; }
+        .card-before .compare-header { color: var(--danger); } .card-after .compare-header { color: var(--accent); }
+
+        .steps-container { display: flex; justify-content: space-between; position: relative; margin-top: 4rem; }
+        .steps-container::before { content: ''; position: absolute; top: 40px; left: 10%; right: 10%; height: 2px; background: var(--border); z-index: 0; border: 2px dashed var(--primary-light); }
+        .step-item { flex: 1; text-align: center; position: relative; z-index: 1; padding: 0 1rem; }
+        .step-icon { width: 80px; height: 80px; background: var(--bg-white); border: 2px solid var(--primary-decorative); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 2rem; color: var(--primary); box-shadow: 0 10px 20px rgba(74, 144, 226, 0.15); transition: var(--transition); }
+        .step-item:hover .step-icon { transform: scale(1.1); background: var(--primary); color: white; }
+        .step-item h3 { margin-bottom: 1rem; font-size: 1.25rem; } .step-item p { color: var(--text-muted); font-size: 0.95rem; }
+        
+        .feature-grid { margin-top: 3rem; }
+        .feature-card { display: flex; flex-direction: column; height: 100%; }
+        .feature-icon { width: 50px; height: 50px; background: var(--primary-bg); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem; font-size: 1.5rem; color: var(--primary-decorative); }
+        
+        @keyframes pulseOpacity { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+        /* ── Reduced-motion: respect user preference ── */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
+        /* ── Skip link: visible on keyboard focus ── */
+        .skip-link { position: absolute; top: -9999px; left: 1rem; z-index: 9999; background: var(--primary); color: #fff; padding: 0.6rem 1.2rem; border-radius: 0 0 var(--radius-sm) var(--radius-sm); font-weight: 700; text-decoration: none; }
+        .skip-link:focus { top: 0; outline: 3px solid #fff; outline-offset: 2px; }
+
+        @media (max-width: 992px) {
+            .hero-container { grid-template-columns: 1fr; text-align: center; }
+            .hero-stats { justify-content: center; }
+            .problem-stats { grid-template-columns: 1fr; }
+            .comparison-cards { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+            /* Nav */
+            .nav-links { display: none; position: absolute; top: 100%; left: 0; width: 100%; background: white; flex-direction: column; padding: 1.5rem; box-shadow: 0 10px 20px rgba(0,0,0,0.1); gap: 0.5rem; }
+            .nav-links.active { display: flex; }
+            .nav-links a { padding: 0.6rem 0; border-bottom: 1px solid var(--border); }
+            .nav-links .btn { margin: 0.5rem 0 0; width: 100%; text-align: center; }
+            .mobile-menu-btn { display: block; }
+
+            /* Hero */
+            .hero { padding-top: 5rem; padding-bottom: 2.5rem; }
+            .hero-content p { font-size: 1rem; }
+            .hero-content .flex { flex-direction: column; }
+            .hero-content .btn { width: 100%; justify-content: center; }
+            .video-mockup { aspect-ratio: 3/2; }
+
+            /* Sections */
+            .section { padding: 3.5rem 0; }
+
+            /* How it works */
+            .steps-container { flex-direction: column; gap: 2rem; }
+            .steps-container::before { top: 0; left: 40px; right: auto; bottom: 0; width: 2px; height: 100%; }
+            .step-item { display: flex; text-align: left; align-items: flex-start; gap: 1.5rem; }
+            .step-icon { margin: 0; min-width: 56px; height: 56px; font-size: 1.4rem; flex-shrink: 0; }
+
+            /* Compliance badges */
+            .compliance-row { gap: 0.6rem; }
+            .compliance-badge { font-size: 0.78rem; padding: 6px 12px; }
+
+            /* ROI Calculator */
+            .roi-calc-grid { grid-template-columns: 1fr !important; }
+
+            /* Footer */
+            .footer-grid { grid-template-columns: 1fr 1fr !important; }
+        }
+        @media (max-width: 480px) {
+            h1 { font-size: 2rem; }
+            h2 { font-size: 1.7rem; }
+            .hero { padding-top: 4.5rem; }
+            .section { padding: 2.5rem 0; }
+            .hero-stats { flex-direction: column; gap: 0.5rem; align-items: center; }
+            .comparison-cards { grid-template-columns: 1fr; }
+            .glass-card { padding: 1.5rem; }
+            .btn-lg { padding: 0.8rem 1.5rem; font-size: 1rem; }
+            /* Footer single column */
+            .footer-grid { grid-template-columns: 1fr !important; }
+            /* Floating CTA on mobile – bring it closer to edge */
+            #floatingBtn { padding: 12px 18px; font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar" aria-label="Main navigation">
+        <div class="container nav-container">
+            <a href="#" class="logo" aria-label="SmartClinics AI – home">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true" focusable="false">
+                    <path d="M40 20 H60 V40 H80 V60 H60 V80 H40 V60 H20 V40 H40 Z" fill="#2C3E50" opacity="0.9"/>
+                    <path d="M70 15 Q 90 15 90 35 Q 90 50 80 55 L 85 70 L 65 60 Q 55 65 40 65 Q 20 65 20 45 Q 20 25 40 25 M30 45 H80" fill="none" stroke="#3498DB" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="45" cy="45" r="4" fill="#3498DB"/>
+                    <circle cx="65" cy="45" r="4" fill="#3498DB"/>
+                </svg>
+                <div class="logo-text">
+                    <span class="logo-title">SmartClinics AI</span>
+                    <span class="logo-subtitle">by DOT STAR INC</span>
+                </div>
+            </a>
+            <div class="nav-links" id="navLinks">
+                <a href="#features">Features</a>
+                <a href="#problem">How It Works</a>
+                <a href="#pricing">Pricing</a>
+                <a href="#portals">Portals</a>
+                <a href="#about">About</a>
+                <a href="app/dashboard.html" class="btn btn-primary" style="color: white; margin-left:1rem;">Launch App</a>
+            </div>
+            <button class="mobile-menu-btn" id="menuBtn" aria-label="Toggle Navigation">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <main id="main-content">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="container hero-container">
+                <div class="hero-content">
+                    <h1 aria-label="Real-Time Medical Translation – AI That Speaks Your Patient's Language">Real-Time Medical Translation<br><span style="color: var(--primary);">AI That Speaks Your Patient's Language</span></h1>
+                    <p>24/7 bilingual healthcare communication with 98.7% medical accuracy. Break language barriers instantly. No app downloads required for patients.</p>
+                    <div class="flex gap-1 flex-wrap">
+                        <a href="app/dashboard.html" class="btn btn-primary btn-lg">Start Free 14-Day Trial</a>
+                        <a href="app/translator.html?lang=Spanish&patient=Demo+Patient" class="btn btn-secondary btn-lg"><i class="fas fa-play-circle" style="margin-right: 8px;"></i> Watch Demo Video</a>
+                    </div>
+                    <div class="hero-stats">
+                        <span><i class="fas fa-shield-alt"></i> HIPAA Compliant</span>
+                        <span><i class="fas fa-star"></i> Trusted by 2,500+ Providers</span>
+                        <span><i class="fas fa-bolt"></i> &lt;800ms Latency</span>
+                    </div>
+                </div>
+                
+                <div class="video-mockup">
+                    <div class="video-split">
+                        <div class="video-pane doc-pane">
+                            <div class="translation-bubble doc-bubble">"You need to take this twice daily."</div>
+                        </div>
+                        <div class="video-pane patient-pane">
+                            <div class="translation-bubble">"Debe tomar esto dos veces al día."</div>
+                        </div>
+                    </div>
+                    <div style="position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.6); color:white; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; display: flex; align-items: center; gap: 6px;">
+                        <div style="width: 8px; height: 8px; background: red; border-radius: 50%; animation: pulseOpacity 1.5s infinite;"></div> REC
+                    </div>
+                    <div style="position: absolute; top: 15px; right: 15px; background: rgba(46, 204, 113, 0.9); color:white; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600;">
+                        98.7% Accuracy
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Trust Section -->
+        <section class="trust-section" aria-label="Compliance and Partners">
+            <div class="container text-center">
+                <div class="compliance-row">
+                    <span class="compliance-badge"><i class="fas fa-lock"></i> HIPAA Compliant</span>
+                    <span class="compliance-badge"><i class="fas fa-check-circle"></i> HITRUST CSF Certified</span>
+                    <span class="compliance-badge"><i class="fas fa-shield-check"></i> SOC 2 Type II</span>
+                    <span class="compliance-badge"><i class="fas fa-globe-europe"></i> GDPR Ready</span>
+                    <span class="compliance-badge ada"><i class="fab fa-accessible-icon"></i> WCAG 2.1 AAA</span>
+                    <span class="compliance-badge"><i class="fas fa-leaf"></i> EPA Green</span>
+                </div>
+                <p style="text-transform: uppercase; font-size: 0.85rem; font-weight: 700; color: var(--text-muted); letter-spacing: 1px; margin-bottom: 1.5rem;">Trusted by integrated health systems</p>
+                <div class="partner-logos" role="list" aria-label="Integration partners">
+                    <p role="listitem" style="color: #555; margin:0; font-size: 1.2rem; font-weight: 700;">Epic</p>
+                    <p role="listitem" style="color: #555; margin:0; font-size: 1.2rem; font-weight: 700;">Cerner</p>
+                    <p role="listitem" style="color: #555; margin:0; font-size: 1.2rem; font-weight: 700;">athenahealth</p>
+                    <p role="listitem" style="color: #555; margin:0; font-size: 1.2rem; font-weight: 700;"><i class="fas fa-comment-dots" aria-hidden="true"></i> Twilio</p>
+                    <p role="listitem" style="color: #555; margin:0; font-size: 1.2rem; font-weight: 700;"><i class="fas fa-video" aria-hidden="true"></i> Zoom</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Problem Section -->
+        <section id="problem" class="section section-gray">
+            <div class="container">
+                <h2>The Cost of the Language Barrier</h2>
+                <p class="text-center" style="max-width: 800px; margin: 0 auto;">Language barriers in healthcare lead to misdiagnoses, prolonged hospital stays, and poor patient outcomes.</p>
+                
+                <div class="problem-stats">
+                    <div class="glass-card stat-card">
+                        <div class="stat-num">46M</div>
+                        <div class="stat-desc">Americans speak limited English</div>
+                    </div>
+                    <div class="glass-card stat-card">
+                        <div class="stat-num">1 in 5</div>
+                        <div class="stat-desc">Patient encounters face language barriers</div>
+                    </div>
+                    <div class="glass-card stat-card">
+                        <div class="stat-num">3x</div>
+                        <div class="stat-desc">Higher readmission risk without interpretation</div>
+                    </div>
+                </div>
+
+                <div class="comparison-cards">
+                    <div class="glass-card card-before">
+                        <div class="compare-header"><i class="fas fa-times-circle"></i> Without SmartClinics</div>
+                        <ul style="list-style:none; padding-left:0;">
+                            <li style="margin-bottom: 0.8rem;"><i class="fas fa-times" style="color:var(--danger); width: 20px;"></i> Waiting 45+ minutes for an interpreter</li>
+                            <li style="margin-bottom: 0.8rem;"><i class="fas fa-times" style="color:var(--danger); width: 20px;"></i> Paying $30-$80/hour minimums</li>
+                            <li style="margin-bottom: 0.8rem;"><i class="fas fa-times" style="color:var(--danger); width: 20px;"></i> High risk of medical miscommunication</li>
+                        </ul>
+                    </div>
+                    <div class="glass-card card-after">
+                        <div class="compare-header"><i class="fas fa-check-circle"></i> With SmartClinics AI</div>
+                        <ul style="list-style:none; padding-left:0;">
+                            <li style="margin-bottom: 0.8rem;"><i class="fas fa-check" style="color:var(--accent); width: 20px;"></i> Instant translation in &lt;800ms</li>
+                            <li style="margin-bottom: 0.8rem;"><i class="fas fa-check" style="color:var(--accent); width: 20px;"></i> Costs as low as $0.05/minute</li>
+                            <li style="margin-bottom: 0.8rem;"><i class="fas fa-check" style="color:var(--accent); width: 20px;"></i> Professional, medically accurate translation</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works -->
+        <section class="section section-light">
+            <div class="container">
+                <h2>How It Works</h2>
+                <div class="steps-container">
+                    <div class="step-item">
+                        <div class="step-icon"><i class="fas fa-phone-volume"></i></div>
+                        <h3>1. Doctor Activates</h3>
+                        <p>One-click from your existing telehealth platform or our secure web portal.</p>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-icon"><i class="fas fa-brain"></i></div>
+                        <h3>2. AI Translates Real-Time</h3>
+                        <p>HIPAA-compliant engine translates with &lt;800ms latency, identifying speakers automatically.</p>
+                        <div style="margin-top: 15px; width: 100%; height: 6px; background: #eee; border-radius: 3px; position: relative; display: block;">
+                            <div style="position: absolute; top:0; left:0; height: 100%; width: 25%; background: var(--accent-decorative); transition: width 0.5s;" id="latencyBar" role="presentation" aria-hidden="true"></div>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-icon"><i class="fas fa-ear-listen"></i></div>
+                        <h3>3. Patient Listens</h3>
+                        <p>Patient hears directions clearly in their native language natively, without an app.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Key Features Section -->
+        <section id="features" class="section section-gray">
+            <div class="container">
+                <h2>Key Features</h2>
+                <p class="text-center" style="max-width: 800px; margin: 0 auto 3rem;">Enterprise-grade healthcare translation built for clinical environments.</p>
+                
+                <div class="grid grid-3 feature-grid">
+                    <div class="glass-card feature-card">
+                        <div class="feature-icon"><i class="fas fa-language"></i></div>
+                        <h3>Bi-Directional Translation</h3>
+                        <p>Real-time translation for Spanish, Mandarin, Arabic, Hindi + 100+ languages in Enterprise.</p>
+                    </div>
+                    <div class="glass-card feature-card">
+                        <div class="feature-icon"><i class="fas fa-server"></i></div>
+                        <h3>99.99% Uptime SLA</h3>
+                        <p>Multi-model fallback using OpenAI, Google Gemini, and AWS Bedrock ensures constant availability.</p>
+                    </div>
+                    <div class="glass-card feature-card">
+                        <div class="feature-icon"><i class="fas fa-stethoscope"></i></div>
+                        <h3>Medical Accuracy</h3>
+                        <p>98.7% clinical precision with BLEU scores >45, understanding complex medical terminology.</p>
+                    </div>
+                    <div class="glass-card feature-card">
+                        <div class="feature-icon"><i class="fas fa-users-viewfinder"></i></div>
+                        <h3>Speaker Diarization</h3>
+                        <p>97% accurate isolation and identification of doctor vs. patient voices in noisy environments.</p>
+                    </div>
+                    <div class="glass-card feature-card">
+                        <div class="feature-icon"><i class="fas fa-laptop-medical"></i></div>
+                        <h3>EHR Integration</h3>
+                        <p>One-click export of translated summaries directly to Epic, Cerner, and athenahealth workflows.</p>
+                    </div>
+                    <div class="glass-card feature-card">
+                        <div class="feature-icon"><i class="fas fa-truck-medical"></i></div>
+                        <h3>Emergency Detection</h3>
+                        <p>Automatically detects keywords like 'chest pain' or 'difficulty breathing' to escalate alerts.</p>
+                    </div>
+                    <div class="glass-card feature-card">
+                        <div class="feature-icon"><i class="far fa-calendar-check"></i></div>
+                        <h3>Smart Booking</h3>
+                        <p>Checks availability and confirms follow-up appointments in the patient's native language.</p>
+                    </div>
+                    <div class="glass-card feature-card">
+                        <div class="feature-icon"><i class="fas fa-file-shield"></i></div>
+                        <h3>HIPAA Transcription</h3>
+                        <p>Secure, compliant recording and transcription capabilities (with active patient consent).</p>
+                    </div>
+                    <div class="glass-card feature-card">
+                        <div class="feature-icon"><i class="fas fa-closed-captioning"></i></div>
+                        <h3>Real-Time Subtitles</h3>
+                        <p>Optional on-screen subtitles for telehealth platforms with less than 1.5 seconds of delay.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Language Map -->
+        <section class="section section-light">
+            <div class="container text-center">
+                <h2>Global Coverage, Dialect Precision</h2>
+                <div style="display: inline-block; background: var(--primary-bg); color: var(--primary); padding: 5px 15px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; margin-bottom: 2rem;">
+                    100+ Languages Available via Enterprise
+                </div>
+                
+                <div class="language-map" role="img" aria-label="World map showing supported languages">
+                    <div class="lang-pin pin-sp" data-lang="Spanish (All Dialects)"></div>
+                    <div class="lang-pin pin-md" data-lang="Mandarin"></div>
+                    <div class="lang-pin pin-ar" data-lang="Arabic"></div>
+                    <div class="lang-pin pin-hi" data-lang="Hindi"></div>
+                    <div class="lang-pin pin-tg" data-lang="Tagalog"></div>
+                </div>
+                
+                <p>Our AI doesn't just translate words; it understands cultural nuances and specific regional dialects.</p>
+            </div>
+        </section>
+
+        <!-- Technology Architecture -->
+        <section class="section section-gray">
+            <div class="container text-center">
+                <h2>Multi-Model AI Architecture</h2>
+                <p style="max-width: 800px; margin: 0 auto;">Experience our Always-On AI Receptionist powered by automatic failover between top LLMs.</p>
+                
+                <div class="arch-diagram">
+                    <div class="arch-node">
+                        <i class="fas fa-microphone-lines"></i>
+                        <h3 style="font-size:1rem; margin-bottom:0.25rem;">Audio Input</h3>
+                        <p style="font-size: 0.8rem; color: var(--text-muted);">WebRTC/SIP</p>
+                    </div>
+                    <i class="fas fa-arrow-right arch-arrow"></i>
+                    <div class="arch-node" style="border-color: var(--primary); border-width: 2px;">
+                        <i class="fas fa-microchip"></i>
+                        <h3 style="font-size:1rem; margin-bottom:0.25rem;">Smart Router</h3>
+                        <p style="font-size: 0.8rem; color: var(--text-muted);">&lt;100ms processing</p>
+                    </div>
+                    <i class="fas fa-arrow-right arch-arrow"></i>
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div class="arch-node" style="padding: 1rem;">
+                            <p style="font-size: 0.9rem; margin:0; font-weight:700;">1. Primary: OpenAI</p>
+                        </div>
+                        <div class="arch-node" style="padding: 1rem;">
+                            <p style="font-size: 0.9rem; margin:0; font-weight:700;">2. Fallback: Gemini</p>
+                        </div>
+                        <div class="arch-node" style="padding: 1rem;">
+                            <p style="font-size: 0.9rem; margin:0; font-weight:700;">3. Safety: Bedrock</p>
+                        </div>
+                    </div>
+                    <i class="fas fa-arrow-right arch-arrow"></i>
+                    <div class="arch-node">
+                        <i class="fas fa-file-medical"></i>
+                        <h3 style="font-size:1rem; margin-bottom:0.25rem;">Clinical Output</h3>
+                        <p style="font-size: 0.8rem; color: var(--text-muted);">Audio & Text</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Use Cases -->
+        <section class="section section-light">
+            <div class="container">
+                <h2>Built for Every Clinical Scenario</h2>
+                <div class="grid grid-2">
+                    <div class="glass-card" style="display: flex; gap: 1.5rem; flex-direction: column;">
+                        <img src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=800" alt="Emergency room doctors" style="border-radius: var(--radius-sm); aspect-ratio: 16/9; object-fit: cover;">
+                        <div>
+                            <h3 style="font-size: 1.2rem; display: flex; align-items: center; gap: 10px;"><i class="fas fa-ambulance" style="color:var(--danger)"></i> Emergency Room</h3>
+                            <p style="font-size: 0.95rem;">"Chest pain patient speaking only Spanish - translated instantly, bypassing 45-minute interpreter waits."</p>
+                        </div>
+                    </div>
+                    <div class="glass-card" style="display: flex; gap: 1.5rem; flex-direction: column;">
+                        <img src="https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&q=80&w=800" alt="Pediatrician with child" style="border-radius: var(--radius-sm); aspect-ratio: 16/9; object-fit: cover;">
+                        <div>
+                            <h3 style="font-size: 1.2rem; display: flex; align-items: center; gap: 10px;"><i class="fas fa-baby" style="color:var(--primary)"></i> Pediatrics</h3>
+                            <p style="font-size: 0.95rem;">"Parents discussing their child's symptoms in Mandarin, fully understood by the attending physician."</p>
+                        </div>
+                    </div>
+                    <div class="glass-card" style="display: flex; gap: 1.5rem; flex-direction: column;">
+                        <img src="https://images.unsplash.com/photo-1576091160550-2173ff9e5954?auto=format&fit=crop&q=80&w=800" alt="Telehealth consultation" style="border-radius: var(--radius-sm); aspect-ratio: 16/9; object-fit: cover;">
+                        <div>
+                            <h3 style="font-size: 1.2rem; display: flex; align-items: center; gap: 10px;"><i class="fas fa-laptop-medical" style="color:var(--primary)"></i> Telehealth</h3>
+                            <p style="font-size: 0.95rem;">"Remote consultation with an Arabic-speaking patient directly through your existing video platform."</p>
+                        </div>
+                    </div>
+                    <div class="glass-card" style="display: flex; gap: 1.5rem; flex-direction: column;">
+                        <img src="https://images.unsplash.com/photo-1551076805-e166946c9ebf?auto=format&fit=crop&q=80&w=800" alt="Clinic reception" style="border-radius: var(--radius-sm); aspect-ratio: 16/9; object-fit: cover;">
+                        <div>
+                            <h3 style="font-size: 1.2rem; display: flex; align-items: center; gap: 10px;"><i class="fas fa-clipboard-check" style="color:var(--accent)"></i> Follow-up & Admin</h3>
+                            <p style="font-size: 0.95rem;">"Automated appointment booking and lab result explanations delivered seamlessly in Hindi."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ROI & Cost Savings -->
+        <section class="section section-blue">
+            <div class="container">
+                <div class="grid grid-2 align-center">
+                    <div>
+                        <h2>Massive Cost Reduction</h2>
+                        <h3 style="font-size: 2rem; color: var(--primary);">94% Average Savings</h3>
+                        <p style="font-size: 1.1rem; margin-bottom: 2rem;">The average primary care practice saves <strong>$47,000 per year</strong> on interpretation services while drastically reducing patient wait times.</p>
+                        
+                        <div style="background: white; border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 2rem; border-left: 4px solid var(--accent);">
+                            <div class="flex justify-between" style="border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 10px;">
+                                <span style="font-weight: 600;">Human Interpreter</span>
+                                <span style="color: var(--danger); font-weight: 700;">$30–80 / hour</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span style="font-weight: 600;">SmartClinics AI</span>
+                                <span style="color: var(--accent); font-weight: 700;">~$0.05 / minute</span>
+                            </div>
+                        </div>
+                        
+                        <a href="#calculator" class="btn btn-primary">Calculate Your Savings</a>
+                    </div>
+                    
+                    <div class="glass-card text-center" style="background: white;">
+                        <h3 style="margin-bottom: 2rem;">Annual Translation Costs</h3>
+                        <!-- Simple CSS Bar Chart representing costs -->
+                        <div style="display: flex; align-items: flex-end; justify-content: space-around; height: 250px; padding-bottom: 30px; border-bottom: 2px solid var(--border); position: relative;">
+                            
+                            <!-- Human Bar -->
+                            <div style="width: 80px; display: flex; flex-direction: column; align-items: center;">
+                                <span style="font-weight: 700; color: var(--danger); margin-bottom: 8px;" aria-label="50 thousand dollars">$50k</span>
+                                <div style="width: 100%; height: 200px; background: linear-gradient(to top, #E74C3C, #F5B7B1); border-radius: 4px 4px 0 0;"></div>
+                                <span style="position: absolute; bottom: 0; font-size: 0.8rem; font-weight: 600; padding-top: 5px;">Traditional</span>
+                            </div>
+                            
+                            <!-- AI Bar -->
+                            <div style="width: 80px; display: flex; flex-direction: column; align-items: center;">
+                                <span style="font-weight: 700; color: var(--accent); margin-bottom: 8px;" aria-label="3 thousand dollars">$3k</span>
+                                <div style="width: 100%; height: 25px; background: linear-gradient(to top, #2Ecc71, #ABEBC6); border-radius: 4px 4px 0 0;"></div>
+                                <span style="position: absolute; bottom: 0; font-size: 0.8rem; font-weight: 600; padding-top: 5px;">SmartClinics</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pricing Plans -->
+        <section id="pricing" class="section section-gray">
+            <div class="container">
+                <h2>Simple, Transparent Pricing</h2>
+                <div class="flex justify-center align-center gap-1" style="margin-bottom: 3rem;" role="group" aria-label="Billing period selector">
+                    <span style="font-weight: 600;" id="billing-monthly-label">Monthly</span>
+                    <label style="position: relative; display: inline-block; width: 50px; height: 26px;" aria-label="Toggle billing period: monthly or annual">
+                        <input type="checkbox" id="billingToggle" checked aria-checked="true" aria-labelledby="billing-monthly-label billing-annual-label" role="switch" style="opacity: 0; position: absolute; width: 50px; height: 26px; margin: 0; cursor: pointer; z-index: 1;">
+                        <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--primary); transition: .4s; border-radius: 34px;" aria-hidden="true">
+                            <span style="position: absolute; content: ''; height: 18px; width: 18px; left: 28px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%;"></span>
+                        </span>
+                    </label>
+                    <span style="font-weight: 600;" id="billing-annual-label">Annually <span style="color: #1A7035; font-size: 0.8rem; background: #c3e6cb; padding: 2px 8px; border-radius: 10px;">Save 20%</span></span>
+                </div>
+
+                <div class="grid grid-3">
+                    <!-- Basic -->
+                    <div class="glass-card" style="display: flex; flex-direction: column;">
+                        <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Basic</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; min-height: 40px;">For small practices focused on core translation.</p>
+                        <div style="font-size: 3rem; font-weight: 800; color: var(--secondary); margin: 1rem 0;">$99<span style="font-size: 1rem; color: var(--text-muted); font-weight: 500;">/mo</span></div>
+                        <ul style="list-style: none; padding: 0; margin-bottom: 2rem; flex: 1;">
+                            <li style="margin-bottom: 1rem;"><i class="fas fa-check" style="color: var(--accent-decorative); margin-right: 10px;" aria-hidden="true"></i> Spanish ↔ English only</li>
+                            <li style="margin-bottom: 1rem;"><i class="fas fa-check" style="color: var(--accent-decorative); margin-right: 10px;" aria-hidden="true"></i> Up to 500 minutes</li>
+                            <li style="margin-bottom: 1rem;"><i class="fas fa-check" style="color: var(--accent-decorative); margin-right: 10px;" aria-hidden="true"></i> Basic transcription</li>
+                            <li style="margin-bottom: 1rem;"><i class="fas fa-check" style="color: var(--accent-decorative); margin-right: 10px;" aria-hidden="true"></i> Email support</li>
+                        </ul>
+                        <button class="btn btn-secondary" style="width: 100%;" onclick="window.location.href='app/dashboard.html'">Start Free Trial</button>
+                    </div>
+
+                    <!-- Professional (Highlighted) -->
+                    <div class="glass-card" style="display: flex; flex-direction: column; border: 2px solid var(--primary); transform: scale(1.05); position: relative; z-index: 10;">
+                        <div style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 4px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: 700;" aria-label="Most popular plan">MOST POPULAR</div>
+                        <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Professional</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; min-height: 40px;">Ideal for growing clinics and telehealth providers.</p>
+                        <div style="font-size: 3rem; font-weight: 800; color: var(--primary); margin: 1rem 0;">$199<span style="font-size: 1rem; color: var(--text-muted); font-weight: 500;">/mo</span></div>
+                        <ul style="list-style: none; padding: 0; margin-bottom: 2rem; flex: 1;">
+                            <li style="margin-bottom: 1rem;"><i class="fas fa-check" style="color: var(--primary-decorative); margin-right: 10px;" aria-hidden="true"></i> Top 20 languages</li>
+                            <li style="margin-bottom: 1rem;"><i class="fas fa-check" style="color: var(--primary-decorative); margin-right: 10px;" aria-hidden="true"></i> Smart appointment booking</li>
+                            <li style="margin-bottom: 1rem;"><i class="fas fa-check" style="color: var(--primary-decorative); margin-right: 10px;" aria-hidden="true"></i> EHR integration (Epic, Cerner)</li>
+                            <li style="margin-bottom: 1rem;"><i class="fas fa-check" style="color: var(--primary-decorative); margin-right: 10px;" aria-hidden="true"></i> Call recording + summaries</li>
+                            <li style="margin-bottom: 1rem;"><i class="fas fa-check" style="color: var(--primary-decorative); margin-right: 10px;" aria-hidden="true"></i> Priority support</li>
+                            <li style="margin-bottom: 1rem;"><i class="fas fa-check" style="color: var(--primary-decorative); margin-right: 10px;" aria-hidden="true"></i> 14-day free trial</li>
+                        </ul>
+                        <button class="btn btn-primary" style="width: 100%;" onclick="window.location.href='app/dashboard.html'">Start Free Trial</button>
+                    </div>
+
+                    <!-- Enterprise -->
+                    <div class="glass-card" style="display: flex; flex-direction: column;">
+                        <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Enterprise</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; min-height: 40px;">Custom solutions for large hospital systems.</p>
+                        <div style="font-size: 3rem; font-weight: 800; color: var(--secondary); margin: 1rem 0;">$299<span style="font-size: 1rem; color: var(--text-muted); font-weight: 500;">/mo</span></div>
+                        <ul style="list-style: none; padding: 0; margin-bottom: 2rem; flex: 1;">
+                            <li style="margin-bottom: 1rem;"><i class="fas fa-check" style="color: var(--accent); margin-right: 10px;"></i> 100+ languages</li>
+                            <li style="margin-bottom: 1rem;"><i class="fas fa-check" style="color: var(--accent); margin-right: 10px;"></i> Custom medical glossary</li>
+                            <li style="margin-bottom: 1rem;"><i class="fas fa-check" style="color: var(--accent); margin-right: 10px;"></i> White-label option</li>
+                            <li style="margin-bottom: 1rem;"><i class="fas fa-check" style="color: var(--accent); margin-right: 10px;"></i> Full API access</li>
+                            <li style="margin-bottom: 1rem;"><i class="fas fa-check" style="color: var(--accent); margin-right: 10px;"></i> Dedicated account manager</li>
+                            <li style="margin-bottom: 1rem;"><i class="fas fa-check" style="color: var(--accent); margin-right: 10px;"></i> 99.99% SLA</li>
+                        </ul>
+                        <button class="btn btn-secondary" style="width: 100%;" onclick="alert('Contact sales@smartclinics.ai or call (844) 555-0100')">Contact Sales</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Integrations -->
+        <section class="section section-light">
+            <div class="container text-center">
+                <h2>Works With Your Existing Tools</h2>
+                <p style="max-width: 800px; margin: 0 auto 3rem;">SmartClinics AI integrates seamlessly with the platforms you already use every day.</p>
+                
+                <div class="flex justify-center flex-wrap gap-2" style="margin-bottom: 2rem;">
+                    <!-- Replacing logos with styled text for visual demo -->
+                    <div style="background:var(--bg-light); padding:1rem 2rem; border-radius:var(--radius-md); font-weight:700; color:#9B1B2A;"><i class="fas fa-comment-dots" aria-hidden="true"></i> Twilio</div>
+                    <div style="background:var(--bg-light); padding:1rem 2rem; border-radius:var(--radius-md); font-weight:700; color:#111111;">vonage</div>
+                    <div style="background:var(--bg-light); padding:1rem 2rem; border-radius:var(--radius-md); font-weight:700; color:#1A5FCC;"><i class="fas fa-video" aria-hidden="true"></i> Zoom</div>
+                    <div style="background:var(--bg-light); padding:1rem 2rem; border-radius:var(--radius-md); font-weight:700; color:#B84000;">RingCentral</div>
+                    <div style="background:var(--bg-light); padding:1rem 2rem; border-radius:var(--radius-md); font-weight:700; color:#005073;"><i class="fab fa-teamspeak" aria-hidden="true"></i> Webex</div>
+                    <div style="background:var(--bg-light); padding:1rem 2rem; border-radius:var(--radius-md); font-weight:700; color:#4B4C8F;"><i class="fab fa-microsoft" aria-hidden="true"></i> Teams</div>
+                </div>
+                
+                <h3 style="font-size: 1.2rem; color: var(--text-muted); margin-top: 3rem;">EHR Partners</h3>
+                <div class="flex justify-center flex-wrap gap-2">
+                    <div style="font-size: 1.5rem; font-weight: 800; color: #9B1616;">Epic</div>
+                    <div style="font-size: 1.5rem; font-weight: 800; color: #0079A6;">Cerner</div>
+                    <div style="font-size: 1.5rem; font-weight: 800; color: #8C2633;">athenahealth</div>
+                    <div style="font-size: 1.5rem; font-weight: 800; color: #A82920;">FHIR</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonials -->
+        <section id="testimonials" class="section section-gray">
+            <div class="container">
+                <h2>Loved by Providers and Patients</h2>
+                <div class="grid grid-2">
+                    <div class="glass-card">
+                        <div class="flex gap-1" style="margin-bottom: 1rem;">
+                            <i class="fas fa-star" style="color: var(--warning);"></i>
+                            <i class="fas fa-star" style="color: var(--warning);"></i>
+                            <i class="fas fa-star" style="color: var(--warning);"></i>
+                            <i class="fas fa-star" style="color: var(--warning);"></i>
+                            <i class="fas fa-star" style="color: var(--warning);"></i>
+                        </div>
+                        <p style="font-style: italic; font-size: 1.1rem;">"We reduced our no-show rate by 40% simply by using SmartClinics to send automated, bilingual appointment reminders."</p>
+                        <div class="flex align-center gap-1" style="margin-top: 1.5rem;">
+                            <img src="https://images.unsplash.com/photo-1594824436998-d8ac09c316af?auto=format&fit=crop&q=80&w=150&h=150" alt="Dr. Sarah Chen" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
+                            <div>
+                                <h3 style="margin: 0; font-size: 1rem;">Dr. Sarah Chen, MD</h3>
+                                <span style="font-size: 0.8rem; color: var(--text-muted);">Cardiologist</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-card">
+                        <div class="flex gap-1" style="margin-bottom: 1rem;">
+                            <i class="fas fa-star" style="color: var(--warning);"></i>
+                            <i class="fas fa-star" style="color: var(--warning);"></i>
+                            <i class="fas fa-star" style="color: var(--warning);"></i>
+                            <i class="fas fa-star" style="color: var(--warning);"></i>
+                            <i class="fas fa-star" style="color: var(--warning);"></i>
+                        </div>
+                        <p style="font-style: italic; font-size: 1.1rem;">"My Spanish-speaking patients finally feel heard. I'm able to build real rapport without an interpreter in the room. Game changer."</p>
+                        <div class="flex align-center gap-1" style="margin-top: 1.5rem;">
+                            <img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=150&h=150" alt="Dr. James Washington" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
+                            <div>
+                                <h3 style="margin: 0; font-size: 1rem;">Dr. James Washington</h3>
+                                <span style="font-size: 0.8rem; color: var(--text-muted);">Family Practice</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card">
+                        <div class="flex gap-1" style="margin-bottom: 1rem;">
+                            <i class="fas fa-star" style="color: var(--warning);"></i>
+                            <i class="fas fa-star" style="color: var(--warning);"></i>
+                            <i class="fas fa-star" style="color: var(--warning);"></i>
+                            <i class="fas fa-star" style="color: var(--warning);"></i>
+                            <i class="fas fa-star" style="color: var(--warning);"></i>
+                        </div>
+                        <p style="font-style: italic; font-size: 1.1rem;">"First time I understood my doctor completely. No more bringing my 10-year-old daughter to translate for me."</p>
+                        <div class="flex align-center gap-1" style="margin-top: 1.5rem;">
+                            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=150&h=150" alt="Maria Gonzalez" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
+                            <div>
+                                <h3 style="margin: 0; font-size: 1rem;">Maria Gonzalez</h3>
+                                <span style="font-size: 0.8rem; color: var(--text-muted);">Patient</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card">
+                        <div class="flex gap-1" style="margin-bottom: 1rem;">
+                            <i class="fas fa-star" style="color: var(--warning);"></i>
+                            <i class="fas fa-star" style="color: var(--warning);"></i>
+                            <i class="fas fa-star" style="color: var(--warning);"></i>
+                            <i class="fas fa-star" style="color: var(--warning);"></i>
+                            <i class="fas fa-star" style="color: var(--warning);"></i>
+                        </div>
+                        <p style="font-style: italic; font-size: 1.1rem;">"ROI in exactly 3 months. We are saving over $12,000 every single month on overhead interpreter fees."</p>
+                        <div class="flex align-center gap-1" style="margin-top: 1.5rem;">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150&h=150" alt="Michael Okonkwo" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
+                            <div>
+                                <h3 style="margin: 0; font-size: 1rem;">Michael Okonkwo</h3>
+                                <span style="font-size: 0.8rem; color: var(--text-muted);">Hospital Administrator</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Security & Compliance -->
+        <section class="section section-dark">
+            <div class="container">
+                <div class="grid grid-2 align-center">
+                    <div>
+                        <h2>Uncompromising Security</h2>
+                        <p style="margin-bottom: 2rem; color: #ddd;">Healthcare data demands the highest standard of protection. SmartClinics AI is built securely from the ground up.</p>
+                        <ul style="list-style: none; padding: 0;">
+                            <li style="margin-bottom: 1rem; display: flex; align-items: flex-start; gap: 10px;">
+                                <i class="fas fa-shield-alt" style="color: var(--accent); margin-top: 5px;"></i>
+                                <div>
+                                    <h3 style="margin: 0 0 5px 0; color: white; font-size:1rem;">HIPAA Compliant with BAA</h3>
+                                    <p style="font-size: 0.9rem; color: #bbb; margin: 0;">We sign a Business Associate Agreement with every Enterprise client.</p>
+                                </div>
+                            </li>
+                            <li style="margin-bottom: 1rem; display: flex; align-items: flex-start; gap: 10px;">
+                                <i class="fas fa-key" style="color: var(--accent); margin-top: 5px;"></i>
+                                <div>
+                                    <h3 style="margin: 0 0 5px 0; color: white; font-size:1rem;">End-to-End Encryption</h3>
+                                    <p style="font-size: 0.9rem; color: #bbb; margin: 0;">TLS 1.3 in transit and AES-256 at rest. SRTP for media streams.</p>
+                                </div>
+                            </li>
+                            <li style="margin-bottom: 1rem; display: flex; align-items: flex-start; gap: 10px;">
+                                <i class="fas fa-eye-slash" style="color: var(--accent); margin-top: 5px;"></i>
+                                <div>
+                                    <h3 style="margin: 0 0 5px 0; color: white; font-size:1rem;">Zero Retention Status</h3>
+                                    <p style="font-size: 0.9rem; color: #bbb; margin: 0;">Ephemeral processing ensures your data never trains public models.</p>
+                                </div>
+                            </li>
+                            <li style="margin-bottom: 1rem; display: flex; align-items: flex-start; gap: 10px;">
+                                <i class="fas fa-file-contract" style="color: var(--accent); margin-top: 5px;"></i>
+                                <div>
+                                    <h3 style="margin: 0 0 5px 0; color: white; font-size:1rem;">Comprehensive Audit Logs</h3>
+                                    <p style="font-size: 0.9rem; color: #bbb; margin: 0;">Detailed tracing of all access securely stored for compliance.</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="glass-card" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1);">
+                        <h3 style="color: white; margin-bottom: 1.5rem;">Accessibility Features (ADA/WCAG AAA)</h3>
+                        <p style="color: #ddd; font-size: 0.95rem; margin-bottom: 1.5rem;">Design inclusive of everyone.</p>
+                        
+                        <div class="grid grid-2">
+                            <div style="margin-bottom: 1rem;">
+                                <i class="fas fa-universal-access" style="color: var(--primary-light); font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
+                                <span style="display: block; color: white; font-size: 0.9rem;">Screen Reader Optimized</span>
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <i class="fas fa-keyboard" style="color: var(--primary-light); font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
+                                <span style="display: block; color: white; font-size: 0.9rem;">Keyboard Navigation</span>
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <i class="fas fa-adjust" style="color: var(--primary-light); font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
+                                <span style="display: block; color: white; font-size: 0.9rem;">High Contrast Mode</span>
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <i class="fas fa-text-height" style="color: var(--primary-light); font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
+                                <span style="display: block; color: white; font-size: 0.9rem;">200% Text Resizing</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About DOT STAR INC -->
+        <section id="about" class="section section-light">
+            <div class="container">
+                <div class="grid grid-2 align-center">
+                    <div>
+                        <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=600&h=600" alt="Director Prakash Bhat" style="border-radius: var(--radius-lg); box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 80%; margin: 0 auto; display: block;">
+                    </div>
+                    <div>
+                        <h2 style="text-align: left; margin-bottom: 1rem;">About DOT STAR INC</h2>
+                        <h3 style="font-size: 1.25rem; color: var(--text-muted); font-weight: 500; margin-bottom: 2rem;">Making healthcare language barriers obsolete.</h3>
+                        <p>SmartClinics AI was founded in 2025 in Bridgewater, New Jersey by a dedicated team of 35 healthcare and AI specialists united under a single mission: ensuring no patient is ever misunderstood.</p>
+                        <p>Led by Director Prakash Bhat, we believe language access is a fundamental healthcare right. By leveraging advanced multi-model artificial intelligence, we're empowering providers to deliver equitable care across all languages and demographics.</p>
+                        
+                        <div style="margin-top: 2rem; padding: 1.5rem; background: var(--bg-light); border-radius: var(--radius-md);">
+                            <h3 style="margin-bottom: 0.5rem; font-size:1rem;">Headquarters</h3>
+                            <address style="font-style: normal; color: var(--text-muted);">
+                                52 Walters Brook Dr,<br>
+                                Bridgewater, New Jersey 08807
+                            </address>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive ROI Calculator -->
+        <section id="calculator" class="section section-gray">
+            <div class="container">
+                <h2 class="text-center">Calculate Your Return on Investment</h2>
+                <div class="glass-card" style="max-width: 800px; margin: 0 auto;">
+                    <form id="roi-form">
+                        <div style="margin-bottom: 2rem;">
+                            <label for="monthlyEncounters" style="display: block; font-weight: 600; margin-bottom: 10px;">Monthly encounters with Limited English Proficiency (LEP) patients: <span id="encountersVal" style="color:var(--primary);">150</span></label>
+                            <input type="range" id="monthlyEncounters" min="10" max="1000" value="150" style="width: 100%;" aria-valuemin="10" aria-valuemax="1000" aria-valuenow="150">
+                        </div>
+                        
+                        <div style="margin-bottom: 2rem;">
+                            <label for="currentCost" style="display: block; font-weight: 600; margin-bottom: 10px;">Current interpreter cost per minute ($): <span id="costVal" style="color:var(--primary);">$1.25</span></label>
+                            <input type="range" id="currentCost" min="0.5" max="3" step="0.05" value="1.25" style="width: 100%;" aria-valuemin="0.5" aria-valuemax="3" aria-valuenow="1.25">
+                            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">Assuming average 15 min encounter length</p>
+                        </div>
+                    </form>
+                    
+                    <div style="background: var(--primary-bg); border-radius: var(--radius-md); padding: 2rem; text-align: center; border: 2px solid var(--primary-light);">
+                        <h3 style="margin-bottom: 0.5rem;">Estimated Annual Savings</h3>
+                        <div style="font-size: 3.5rem; font-weight: 800; color: var(--accent);" id="savingsResult" aria-live="polite" aria-atomic="true">$32,625</div>
+                        <p style="font-weight: 600; color: var(--secondary);">Over 1,000% ROI Year One</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ -->
+        <section class="section section-light">
+            <div class="container">
+                <h2>Frequently Asked Questions</h2>
+                <div style="max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 1rem;">
+                    
+                    <div class="faq-accordion glass-card" style="padding: 1.5rem;">
+                        <p style="margin: 0;">
+                            <button class="faq-trigger" aria-expanded="false" aria-controls="faq-1" style="width:100%; background:none; border:none; cursor:pointer; display:flex; justify-content:space-between; align-items:center; font-size:1rem; font-weight:700; color:var(--secondary); text-align:left; padding:0;">
+                                Is it really HIPAA compliant? <i class="fas fa-chevron-down faq-icon" style="transition: var(--transition); flex-shrink:0;" aria-hidden="true"></i>
+                            </button>
+                        </p>
+                        <div class="faq-content" id="faq-1" role="region" aria-label="HIPAA compliance answer" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out;">
+                            <p style="margin-top: 1rem; margin-bottom: 0; color: var(--text-muted);">Yes. We operate with zero-retention ephemeral processing. Transcripts are only saved if explicitly requested and consent is given. We sign a Business Associate Agreement (BAA) with all clients.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-accordion glass-card" style="padding: 1.5rem;">
+                        <p style="margin: 0;">
+                            <button class="faq-trigger" aria-expanded="false" aria-controls="faq-2" style="width:100%; background:none; border:none; cursor:pointer; display:flex; justify-content:space-between; align-items:center; font-size:1rem; font-weight:700; color:var(--secondary); text-align:left; padding:0;">
+                                Do patients need to download an app? <i class="fas fa-chevron-down faq-icon" style="transition: var(--transition); flex-shrink:0;" aria-hidden="true"></i>
+                            </button>
+                        </p>
+                        <div class="faq-content" id="faq-2" role="region" aria-label="App download answer" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out;">
+                            <p style="margin-top: 1rem; margin-bottom: 0; color: var(--text-muted);">No. Patients can receive the translation via a direct phone call (we dial them) or through a universal web link sent via SMS that opens in their phone's native browser instantly.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-accordion glass-card" style="padding: 1.5rem;">
+                        <p style="margin: 0;">
+                            <button class="faq-trigger" aria-expanded="false" aria-controls="faq-3" style="width:100%; background:none; border:none; cursor:pointer; display:flex; justify-content:space-between; align-items:center; font-size:1rem; font-weight:700; color:var(--secondary); text-align:left; padding:0;">
+                                How accurate is the medical terminology? <i class="fas fa-chevron-down faq-icon" style="transition: var(--transition); flex-shrink:0;" aria-hidden="true"></i>
+                            </button>
+                        </p>
+                        <div class="faq-content" id="faq-3" role="region" aria-label="Medical accuracy answer" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out;">
+                            <p style="margin-top: 1rem; margin-bottom: 0; color: var(--text-muted);">Our models are fine-tuned on millions of clinical interactions (de-identified) and score 98.7% accuracy on standard medical benchmarks, significantly outperforming generic translation tools like Google Translate.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-accordion glass-card" style="padding: 1.5rem;">
+                        <p style="margin: 0;">
+                            <button class="faq-trigger" aria-expanded="false" aria-controls="faq-4" style="width:100%; background:none; border:none; cursor:pointer; display:flex; justify-content:space-between; align-items:center; font-size:1rem; font-weight:700; color:var(--secondary); text-align:left; padding:0;">
+                                What happens in emergency situations? <i class="fas fa-chevron-down faq-icon" style="transition: var(--transition); flex-shrink:0;" aria-hidden="true"></i>
+                            </button>
+                        </p>
+                        <div class="faq-content" id="faq-4" role="region" aria-label="Emergency handling answer" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out;">
+                            <p style="margin-top: 1rem; margin-bottom: 0; color: var(--text-muted);">SmartClinics prioritizes emergency keywords (e.g., 'chest pain', 'can't breathe') and processes them with ultra-low latency &lt;200ms, triggering visual alerts on the provider's dashboard.</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+        <!-- Comparison Table -->
+        <section class="section section-gray">
+            <div class="container text-center">
+                <h2>Why SmartClinics AI Wins</h2>
+                <div style="overflow-x: auto; max-width: 900px; margin: 0 auto; background: white; border-radius: var(--radius-lg); box-shadow: var(--glass-shadow);">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                        <thead>
+                            <tr style="background-color: var(--primary-bg); border-bottom: 2px solid var(--border);">
+                                <th style="padding: 1.5rem; font-weight: 700; color: var(--secondary);">Feature</th>
+                                <th style="padding: 1.5rem; font-weight: 600; color: var(--text-muted); text-align: center;">Human Interpreters</th>
+                                <th style="padding: 1.5rem; font-weight: 600; color: var(--text-muted); text-align: center;">Google Translate</th>
+                                <th style="padding: 1.5rem; font-weight: 800; color: var(--primary); text-align: center;">SmartClinics AI</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom: 1px solid var(--border);">
+                                <td style="padding: 1.5rem; font-weight: 600;">Medical Accuracy</td>
+                                <td style="padding: 1.5rem; text-align: center;">99%</td>
+                                <td style="padding: 1.5rem; text-align: center;">65%</td>
+                                <td style="padding: 1.5rem; text-align: center; font-weight: 700; color: var(--accent);">98.7% / BLEU >45</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--border);">
+                                <td style="padding: 1.5rem; font-weight: 600;">HIPAA Compliant</td>
+                                <td style="padding: 1.5rem; text-align: center;"><i class="fas fa-check" style="color:var(--accent);"></i></td>
+                                <td style="padding: 1.5rem; text-align: center;"><i class="fas fa-times" style="color:var(--danger);"></i></td>
+                                <td style="padding: 1.5rem; text-align: center;"><i class="fas fa-check" style="color:var(--accent);"></i> BAA Included</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--border);">
+                                <td style="padding: 1.5rem; font-weight: 600;">24/7 Availability</td>
+                                <td style="padding: 1.5rem; text-align: center;"><i class="fas fa-times" style="color:var(--danger);"></i></td>
+                                <td style="padding: 1.5rem; text-align: center;"><i class="fas fa-check" style="color:var(--accent);"></i></td>
+                                <td style="padding: 1.5rem; text-align: center;"><i class="fas fa-check" style="color:var(--accent);"></i> &lt;800ms Latency</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--border);">
+                                <td style="padding: 1.5rem; font-weight: 600;">Cost / Minute</td>
+                                <td style="padding: 1.5rem; text-align: center; color: var(--danger);">$1.00 - $2.00</td>
+                                <td style="padding: 1.5rem; text-align: center;">Free</td>
+                                <td style="padding: 1.5rem; text-align: center; font-weight: 700; color: var(--accent);">$0.05</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--border);">
+                                <td style="padding: 1.5rem; font-weight: 600;">EHR Integration</td>
+                                <td style="padding: 1.5rem; text-align: center;"><i class="fas fa-times" style="color:var(--danger);"></i></td>
+                                <td style="padding: 1.5rem; text-align: center;"><i class="fas fa-times" style="color:var(--danger);"></i></td>
+                                <td style="padding: 1.5rem; text-align: center;"><i class="fas fa-check" style="color:var(--accent);"></i> Epic, Cerner</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 1.5rem; font-weight: 600;">Emergency Detection</td>
+                                <td style="padding: 1.5rem; text-align: center;"><i class="fas fa-times" style="color:var(--danger);"></i></td>
+                                <td style="padding: 1.5rem; text-align: center;"><i class="fas fa-times" style="color:var(--danger);"></i></td>
+                                <td style="padding: 1.5rem; text-align: center;"><i class="fas fa-check" style="color:var(--accent);"></i> Auto-Escalates</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- News & Press -->
+        <section class="section section-light">
+            <div class="container text-center">
+                <h2>In The Press</h2>
+                <div class="grid grid-3">
+                    <div class="glass-card" style="box-shadow: none;">
+                        <div style="font-family: serif; font-size: 2rem; font-weight: bold; margin-bottom: 1rem; color: #2C3E50;">Forbes</div>
+                        <p style="font-size: 1.1rem; font-style: italic; color: var(--text-muted);">"The AI Revolutionizing Medical Translation and Closing the Language Equity Gap."</p>
+                    </div>
+                    <div class="glass-card" style="box-shadow: none;">
+                        <div style="font-family: sans-serif; font-size: 2.2rem; font-weight: 900; margin-bottom: 1rem; color: #00A651; letter-spacing: -1px;">TechCrunch</div>
+                        <p style="font-size: 1.1rem; font-style: italic; color: var(--text-muted);">"SmartClinics AI Raises $15M Seed to Bring Instant Translation to Every Telehealth Visit."</p>
+                    </div>
+                    <div class="glass-card" style="box-shadow: none;">
+                        <div style="font-family: sans-serif; font-size: 1.5rem; font-weight: bold; margin-bottom: 1.25rem; color: #005696;">Healthcare IT News</div>
+                        <p style="font-size: 1.1rem; font-style: italic; color: var(--text-muted);">"How Multi-Model AI Architecture is Slashing Interpreter Overhead by 90%."</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Final CTA -->
+        <section class="section hero" style="padding-top: 6rem; padding-bottom: 6rem;">
+            <div class="container text-center" style="position: relative; z-index: 2;">
+                <h2 style="font-size: clamp(2.5rem, 5vw, 3.5rem); margin-bottom: 1rem;">Start Breaking Language Barriers Today</h2>
+                <p style="font-size: 1.25rem; color: var(--text-muted); margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto;">Join 2,500+ clinics delivering equitable care. Get 500 free minutes included.</p>
+                <a href="app/dashboard.html" class="btn btn-primary btn-lg" style="margin-bottom: 2rem;">Claim Your 14-Day Free Trial</a>
+                <div class="flex justify-center flex-wrap gap-2" style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted);">
+                    <span><i class="fas fa-lock" style="color:var(--accent)"></i> No Credit Card Required</span>
+                    <span><i class="fas fa-bolt" style="color:var(--accent)"></i> Setup in &lt;5 Minutes</span>
+                    <span><i class="fas fa-shield-alt" style="color:var(--accent)"></i> HIPAA BAA Included</span>
+                </div>
+            </div>
+            <!-- Decorative Background Element -->
+            <div style="position: absolute; bottom: -50px; left: -50px; width: 300px; height: 300px; background: rgba(74, 144, 226, 0.1); border-radius: 50%; filter: blur(40px);"></div>
+        </section>
+
+        <!-- Portal Access Section -->
+        <section class="section section-dark" id="portals">
+            <div class="container text-center">
+                <h2 style="color:white;">Access Your Portal</h2>
+                <p style="color:#ccc;max-width:700px;margin:0 auto 3rem;">SmartClinics AI comes with three purpose-built portals — for providers, receptionists, and patients. All fully interactive.</p>
+                <div class="grid grid-3" style="max-width:1000px;margin:0 auto;">
+                    <a href="app/dashboard.html" style="text-decoration:none;">
+                        <div class="glass-card" style="background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.15);text-align:center;transition:all 0.3s;cursor:pointer;" onmouseover="this.style.transform='translateY(-8px)';this.style.background='rgba(21,88,176,0.4)'" onmouseout="this.style.transform='translateY(0)';this.style.background='rgba(255,255,255,0.08)'">
+                            <div style="width:70px;height:70px;background:rgba(21,88,176,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:2rem;color:#B8D9F5;border:2px solid rgba(21,88,176,0.5);">
+                                <i class="fas fa-stethoscope"></i>
+                            </div>
+                            <h3 style="color:white;font-size:1.3rem;margin-bottom:0.5rem;">Provider Portal</h3>
+                            <p style="color:#aaa;font-size:0.9rem;margin-bottom:1.5rem;">Dashboard, Patients, Appointments, Analytics, Translation Sessions</p>
+                            <span style="background:var(--primary);color:white;padding:0.6rem 1.5rem;border-radius:50px;font-weight:700;font-size:0.85rem;display:inline-block;">Enter Portal →</span>
+                        </div>
+                    </a>
+                    <a href="app/receptionist.html" style="text-decoration:none;">
+                        <div class="glass-card" style="background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.15);text-align:center;transition:all 0.3s;cursor:pointer;" onmouseover="this.style.transform='translateY(-8px)';this.style.background='rgba(26,112,53,0.4)'" onmouseout="this.style.transform='translateY(0)';this.style.background='rgba(255,255,255,0.08)'">
+                            <div style="width:70px;height:70px;background:rgba(46,204,113,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:2rem;color:#2ecc71;border:2px solid rgba(46,204,113,0.4);">
+                                <i class="fas fa-headset"></i>
+                            </div>
+                            <h3 style="color:white;font-size:1.3rem;margin-bottom:0.5rem;">Receptionist Portal</h3>
+                            <p style="color:#aaa;font-size:0.9rem;margin-bottom:1.5rem;">Patient Queue, Check-In, SMS Communication, Room Assignment</p>
+                            <span style="background:#1A7035;color:white;padding:0.6rem 1.5rem;border-radius:50px;font-weight:700;font-size:0.85rem;display:inline-block;">Enter Portal →</span>
+                        </div>
+                    </a>
+                    <a href="app/patient_lobby.html?lang=Spanish&patient=Demo+Patient" style="text-decoration:none;">
+                        <div class="glass-card" style="background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.15);text-align:center;transition:all 0.3s;cursor:pointer;" onmouseover="this.style.transform='translateY(-8px)';this.style.background='rgba(142,68,173,0.4)'" onmouseout="this.style.transform='translateY(0)';this.style.background='rgba(255,255,255,0.08)'">
+                            <div style="width:70px;height:70px;background:rgba(142,68,173,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:2rem;color:#bb8fce;border:2px solid rgba(142,68,173,0.4);">
+                                <i class="fas fa-mobile-alt"></i>
+                            </div>
+                            <h3 style="color:white;font-size:1.3rem;margin-bottom:0.5rem;">Patient Portal</h3>
+                            <p style="color:#aaa;font-size:0.9rem;margin-bottom:1.5rem;">Mobile-first patient session view, live translation, no app needed</p>
+                            <span style="background:#8e44ad;color:white;padding:0.6rem 1.5rem;border-radius:50px;font-weight:700;font-size:0.85rem;display:inline-block;">Enter Portal →</span>
+                        </div>
+                    </a>
+                </div>
+                <p style="color:rgba(255,255,255,0.4);font-size:0.8rem;margin-top:2rem;">All portals are fully functional prototypes. No login required for demo.</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer style="background-color: var(--secondary); color: white; padding: 4rem 0 2rem;">
+        <div class="container">
+            <div class="grid grid-4 footer-grid" style="margin-bottom: 3rem;">
+                <!-- Company Info -->
+                <div>
+                    <a href="#" class="logo" style="margin-bottom: 1.5rem;">
+                        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width: 35px; height: 35px;">
+                            <path d="M40 20 H60 V40 H80 V60 H60 V80 H40 V60 H20 V40 H40 Z" fill="white" opacity="0.9"/>
+                            <path d="M70 15 Q 90 15 90 35 Q 90 50 80 55 L 85 70 L 65 60 Q 55 65 40 65 Q 20 65 20 45 Q 20 25 40 25 M30 45 H80" fill="none" stroke="#3498DB" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <div class="logo-text">
+                            <span class="logo-title" style="color: white; font-size: 1.1rem;">SmartClinics AI</span>
+                            <span class="logo-subtitle" style="color: #bbb; font-size: 0.6rem;">by DOT STAR INC</span>
+                        </div>
+                    </a>
+                    <p style="color: #aaa; font-size: 0.9rem; margin-bottom: 1.5rem;">Breaking language barriers in healthcare with secure, real-time AI translation.</p>
+                    <nav aria-label="Social media links" style="display:flex; gap:1rem;">
+                        <a href="#" style="color: white; font-size: 1.25rem;" aria-label="SmartClinics AI on LinkedIn"><i class="fab fa-linkedin" aria-hidden="true"></i></a>
+                        <a href="#" style="color: white; font-size: 1.25rem;" aria-label="SmartClinics AI on Twitter"><i class="fab fa-twitter" aria-hidden="true"></i></a>
+                        <a href="#" style="color: white; font-size: 1.25rem;" aria-label="SmartClinics AI on YouTube"><i class="fab fa-youtube" aria-hidden="true"></i></a>
+                    </nav>
+                </div>
+
+                <!-- Quick Links -->
+                <div>
+                    <h3 style="color: white; margin-bottom: 1.5rem; font-size:1rem;">Platform</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 0.8rem;"><a href="#features" style="color: #aaa; text-decoration: none;">Features</a></li>
+                        <li style="margin-bottom: 0.8rem;"><a href="#pricing" style="color: #aaa; text-decoration: none;">Pricing</a></li>
+                        <li style="margin-bottom: 0.8rem;"><a href="#" style="color: #aaa; text-decoration: none;">Integrations</a></li>
+                        <li style="margin-bottom: 0.8rem;"><a href="#" style="color: #aaa; text-decoration: none;">Security & Compliance</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 style="color: white; margin-bottom: 1.5rem; font-size:1rem;">Company</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 0.8rem;"><a href="#about" style="color: #aaa; text-decoration: none;">About Us</a></li>
+                        <li style="margin-bottom: 0.8rem;"><a href="#" style="color: #aaa; text-decoration: none;">Careers</a></li>
+                        <li style="margin-bottom: 0.8rem;"><a href="#" style="color: #aaa; text-decoration: none;">Press</a></li>
+                        <li style="margin-bottom: 0.8rem;"><a href="#" style="color: #aaa; text-decoration: none;">Contact Sales</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 style="color: white; margin-bottom: 1.5rem; font-size:1rem;">Contact</h3>
+                    <ul style="list-style: none; padding: 0; color: #aaa; font-size: 0.9rem;">
+                        <li style="margin-bottom: 0.8rem;"><i class="fas fa-map-marker-alt" style="margin-right: 8px;"></i> 52 Walters Brook Dr,<br>Bridgewater, NJ 08807</li>
+                        <li style="margin-bottom: 0.8rem;"><i class="fas fa-envelope" style="margin-right: 8px;"></i> hello@smartclinics.ai</li>
+                        <li style="margin-bottom: 0.8rem;"><i class="fas fa-phone" style="margin-right: 8px;"></i> 1-800-555-0199</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 2rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; color: #aaa; font-size: 0.85rem;">
+                <p style="margin: 0;">&copy; 2025 DOT STAR INC. All rights reserved.</p>
+                <div style="display: flex; gap: 1.5rem;">
+                    <a href="#" style="color: #aaa; text-decoration: underline;">Privacy Policy</a>
+                    <a href="#" style="color: #aaa; text-decoration: underline;">Terms of Service</a>
+                    <a href="#" style="color: #aaa; text-decoration: underline;">HIPAA Notice</a>
+                    <a href="#" style="color: #aaa; text-decoration: underline;">Cookie Policy</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Floating CTA Widget -->
+    <aside aria-label="Quick sign-up" style="position:fixed; bottom:20px; right:20px; z-index:99;">
+        <a href="#pricing" style="display:inline-block; background: var(--primary); color: white; padding: 15px 25px; border-radius: 50px; font-weight: 600; box-shadow: 0 10px 25px rgba(21, 88, 176, 0.4); transition: var(--transition); text-decoration:none;" id="floatingBtn" aria-label="Start Free Trial – go to pricing">
+            Start Free Trial
+        </a>
+    </aside>
+
+    <!-- Javascript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Mobile Menu Toggle
+            const menuBtn = document.getElementById('menuBtn');
+            const navLinks = document.getElementById('navLinks');
+            
+            menuBtn.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+            });
+
+            // Close mobile menu on click
+            navLinks.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    navLinks.classList.remove('active');
+                });
+            });
+
+            // Navbar scroll effect
+            const navbar = document.getElementById('navbar');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 50) {
+                    navbar.style.boxShadow = '0 5px 20px rgba(0,0,0,0.1)';
+                    navbar.style.padding = '0.5rem 0';
+                } else {
+                    navbar.style.boxShadow = '0 2px 15px rgba(0,0,0,0.05)';
+                    navbar.style.padding = '1rem 0';
+                }
+                
+                // Floating button visibility
+                const floatingBtn = document.getElementById('floatingBtn');
+                if (window.scrollY > 500) {
+                    floatingBtn.style.opacity = '1';
+                    floatingBtn.style.transform = 'translateY(0)';
+                } else {
+                    floatingBtn.style.opacity = '0';
+                    floatingBtn.style.transform = 'translateY(20px)';
+                    floatingBtn.style.pointerEvents = window.scrollY > 500 ? 'auto' : 'none';
+                }
+            });
+
+            // Initial state for floating btn
+            const floatingBtn = document.getElementById('floatingBtn');
+            floatingBtn.style.opacity = '0';
+            floatingBtn.style.pointerEvents = 'none';
+
+            // ROI Calculator Logic
+            const encountersInput = document.getElementById('monthlyEncounters');
+            const costInput = document.getElementById('currentCost');
+            const encountersVal = document.getElementById('encountersVal');
+            const costVal = document.getElementById('costVal');
+            const resultDisplay = document.getElementById('savingsResult');
+
+            function calculateROI() {
+                const encounters = parseInt(encountersInput.value);
+                const costPerMin = parseFloat(costInput.value);
+                
+                // Update UI Labels
+                encountersVal.textContent = encounters;
+                costVal.textContent = '$' + costPerMin.toFixed(2);
+                
+                // Calculation Logic
+                // Assume avg 15 min encounter. SmartClinics is $0.05/min.
+                const minsPerEncounter = 15;
+                const totalMinsPerMonth = encounters * minsPerEncounter;
+                
+                const oldMonthlyCost = totalMinsPerMonth * costPerMin;
+                const newMonthlyCost = totalMinsPerMonth * 0.05;
+                
+                const monthlySavings = oldMonthlyCost - newMonthlyCost;
+                const annualSavings = monthlySavings * 12;
+                
+                // Format Currency
+                resultDisplay.textContent = new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                    maximumFractionDigits: 0
+                }).format(annualSavings);
+            }
+
+            encountersInput.addEventListener('input', calculateROI);
+            costInput.addEventListener('input', calculateROI);
+            calculateROI(); // Initial calculation
+
+            // FAQ Accordion – ARIA-enhanced
+            const faqTriggers = document.querySelectorAll('.faq-trigger');
+            faqTriggers.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const isOpen = btn.getAttribute('aria-expanded') === 'true';
+                    // Close all
+                    faqTriggers.forEach(other => {
+                        other.setAttribute('aria-expanded', 'false');
+                        other.querySelector('.faq-icon').style.transform = 'rotate(0deg)';
+                        document.getElementById(other.getAttribute('aria-controls')).style.maxHeight = null;
+                    });
+                    // Open clicked (unless it was already open)
+                    if (!isOpen) {
+                        btn.setAttribute('aria-expanded', 'true');
+                        btn.querySelector('.faq-icon').style.transform = 'rotate(180deg)';
+                        const content = document.getElementById(btn.getAttribute('aria-controls'));
+                        content.style.maxHeight = content.scrollHeight + 'px';
+                    }
+                });
+            });
+
+            // Latency Meter Animation Sequence
+            const latencyBars = document.querySelectorAll('#latencyBar');
+            const latencyText = document.getElementById('latencyText');
+            
+            setInterval(() => {
+                // Randomly fluctuate between 200ms and 800ms
+                const val = Math.floor(Math.random() * 600) + 200;
+                // Width percentage (max 800)
+                const percent = Math.min((val / 1000) * 100, 100);
+                
+                latencyBars.forEach(bar => {
+                    bar.style.width = `${percent}%`;
+                    if (val < 400) bar.style.background = '#2Ecc71';
+                    else if (val < 600) bar.style.background = '#F1C40F';
+                    else bar.style.background = '#E74C3C';
+                });
+                
+                if (latencyText) {
+                    latencyText.innerText = val;
+                    if (val < 400) latencyText.style.color = '#2Ecc71';
+                    else if (val < 600) latencyText.style.color = '#F1C40F';
+                    else latencyText.style.color = '#E74C3C';
+                }
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

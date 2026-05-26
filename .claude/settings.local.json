@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Claude_Preview__preview_start",
+      "Bash(where python:*)",
+      "Bash(where python3:*)",
+      "Bash(where node:*)",
+      "Bash(python -c \":*)",
+      "Bash(npm --version)",
+      "WebSearch",
+      "Bash(claude plugin:*)",
+      "Read(//c/Users/shash/AppData/Roaming/npm/**)",
+      "Bash(npm list:*)",
+      "Bash(npx claude:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(gh api *)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d, indent=2\\)\\)\")",
+      "Bash(git --version)",
+      "Read(//tmp/**)",
+      "Read(//tmp/awesome-claude-skills-sparse/**)",
+      "Bash(python3 -c ' *)",
+      "Bash(mkdir -p ~/.claude/plugins/marketplaces/awesome-claude-skills)",
+      "Bash(cp -r /tmp/awesome-claude-skills-sparse/composio-skills/. ~/.claude/plugins/marketplaces/awesome-claude-skills/)",
+      "Bash(cp /tmp/original_marketplace.json /c/Users/shash/AppData/Local/Temp/original_marketplace.json)",
+      "Bash(python3 /c/Users/shash/AppData/Local/Temp/gen_marketplace.py)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(list\\(d.keys\\(\\)\\)[:5]\\); print\\('Total:', len\\(d\\)\\)\")",
+      "Bash(pip install *)",
+      "Bash(python -c \"import openpyxl; print\\('ok'\\)\")"
+    ]
+  }
+}

@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Active Session - SmartClinics AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Specific Translator Layout inside Main Wrapper */
+        .workspace {
+            display: flex;
+            height: calc(100vh - var(--header-height));
+            overflow: hidden;
+            background-color: var(--bg-light);
+        }
+
+        .video-panel {
+            flex: 1;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            border-right: 1px solid var(--border);
+        }
+
+        .video-container {
+            flex: 1;
+            background-color: #000;
+            border-radius: var(--radius-md);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: flex;
+        }
+
+        .video-main {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background: url("https://images.unsplash.com/photo-1544027993-37dbd58eae8d?auto=format&fit=crop&q=80&w=1200") center/cover no-repeat;
+        }
+
+        .video-pip {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 180px;
+            height: 120px;
+            background-color: #222;
+            border-radius: var(--radius-sm);
+            border: 2px solid white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            background: url("https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=300") center/cover no-repeat;
+            z-index: 10;
+        }
+
+        .video-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            padding: 1rem;
+            background-color: white;
+            border-radius: var(--radius-pill);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin: 0 auto;
+        }
+
+        .control-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--secondary);
+            background-color: var(--bg-light);
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+        }
+
+        .control-btn:hover {
+            background-color: #e2e8f0;
+        }
+
+        .control-btn.active {
+            background-color: rgba(74, 144, 226, 0.1);
+            color: var(--primary);
+        }
+
+        .control-btn.danger {
+            background-color: rgba(231, 76, 60, 0.1);
+            color: var(--danger);
+        }
+        
+        .control-btn.danger:hover {
+            background-color: rgba(231, 76, 60, 0.2);
+        }
+
+        .control-btn.end-call {
+            background-color: var(--danger);
+            color: white;
+            padding: 0 1.5rem;
+            border-radius: var(--radius-pill);
+            width: auto;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .control-btn.end-call:hover {
+            background-color: #c0392b;
+        }
+
+        /* Transcription Split Panel */
+        .transcript-panel {
+            width: 450px;
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .transcript-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #fcfcfc;
+        }
+
+        .lang-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .lang-flag {
+            padding: 4px 10px;
+            background: var(--bg-light);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .transcript-body {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* Chat bubbles */
+        .message-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .msg-doc {
+            align-items: flex-end;
+        }
+
+        .msg-patient {
+            align-items: flex-start;
+        }
+
+        .msg-speaker {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+        }
+
+        .msg-bubble {
+            max-width: 85%;
+            padding: 0.8rem 1rem;
+            border-radius: 18px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            position: relative;
+        }
+
+        /* English side of bubble */
+        .msg-doc .msg-bubble {
+            background-color: var(--primary-bg);
+            color: var(--secondary);
+            border-bottom-right-radius: 4px;
+        }
+
+        /* Translated side of bubble */
+        .msg-patient .msg-bubble {
+            background-color: var(--bg-light);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            border-bottom-left-radius: 4px;
+        }
+
+        /* Subtitle translation inside the bubble */
+        .msg-translation {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px rgba(0,0,0,0.05) dashed;
+            font-style: italic;
+        }
+
+        /* Transcription Input Area */
+        .transcript-footer {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
+            background-color: #fcfcfc;
+        }
+
+        /* Simulate Input purely for demo purposes */
+        .demo-input-area {
+            display: flex;
+            gap: 10px;
+            background: var(--bg-light);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-pill);
+            padding: 5px 5px 5px 15px;
+            align-items: center;
+        }
+
+        .demo-input-area input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 0.95rem;
+        }
+
+        .sim-mic-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .sim-mic-btn.recording {
+            background-color: var(--danger);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+        }
+
+        /* Emergency Alert Banner */
+        .emergency-alert {
+            background-color: rgba(231, 76, 60, 0.1);
+            border-left: 4px solid var(--danger);
+            padding: 1rem;
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1rem;
+            align-items: flex-start;
+            display: none; /* hidden by default */
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .emergency-icon {
+            color: var(--danger);
+            font-size: 1.2rem;
+            margin-top: 2px;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 10px;
+            align-items: center;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            background-color: var(--text-muted);
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out both;
+        }
+
+        .dot:nth-child(1) { animation-delay: -0.32s; }
+        .dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        /* Session Metrics overlay */
+        .session-metrics {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            color: white;
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 20;
+        }
+
+        .metric {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .metric-good { color: var(--accent); }
+        .metric-warn { color: var(--warning); }
+
+        /* ── Translator Responsive ── */
+        @media (max-width: 900px) {
+            .workspace {
+                flex-direction: column;
+                overflow-y: auto;
+                overflow-x: hidden;
+            }
+            .video-panel {
+                flex: none;
+                height: 280px;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                padding: 0.8rem;
+                gap: 0.8rem;
+            }
+            .video-controls {
+                padding: 0.6rem 1rem;
+                gap: 0.8rem;
+                border-radius: var(--radius-md);
+            }
+            .control-btn { width: 38px; height: 38px; font-size: 1rem; }
+            .control-btn.end-call {
+                padding: 0 0.9rem;
+                font-size: 0.82rem;
+            }
+            .transcript-panel {
+                width: 100% !important;
+                flex: 1;
+                min-height: 360px;
+                border-top: 1px solid var(--border);
+            }
+            .video-pip { width: 110px; height: 75px; bottom: 10px; right: 10px; }
+            .session-metrics { font-size: 0.72rem; gap: 10px; padding: 5px 10px; }
+        }
+        @media (max-width: 600px) {
+            .video-panel { height: 230px; padding: 0.6rem; }
+            .video-controls { gap: 0.5rem; padding: 0.5rem 0.8rem; }
+            .control-btn { width: 34px; height: 34px; font-size: 0.9rem; }
+            .control-btn.end-call { padding: 0 0.7rem; font-size: 0.78rem; }
+            .transcript-header { padding: 0.8rem 1rem; }
+            .transcript-footer { padding: 0.8rem 1rem; }
+            .transcript-body { padding: 0.8rem 1rem; }
+            #patientLinkNotification {
+                width: calc(100vw - 2rem);
+                left: 1rem;
+                transform: none;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+        }
+        @media (max-width: 420px) {
+            .video-pip { display: none; }
+            .session-metrics .metric:last-child { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container" style="flex-direction: column;">
+        <!-- Compact Header -->
+        <header class="top-header" style="background-color: var(--secondary); color: white; border: none; flex-wrap: wrap; min-height: var(--header-height); height: auto; padding: 0 1rem; gap: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem; min-width: 0; flex: 1;">
+                <a href="dashboard.html" style="color: white; opacity: 0.8; flex-shrink: 0;"><i class="fas fa-arrow-left"></i></a>
+                <div style="display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 1rem; min-width: 0;">
+                    <i class="fas fa-video" style="color: var(--accent); flex-shrink: 0;"></i>
+                    <span id="headerPatientName" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Telehealth Session</span>
+                </div>
+                <div class="ehr-sync-indicator" style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 4px; font-size: 0.72rem; flex-shrink: 0;">
+                    <div style="width: 7px; height: 7px; background: var(--accent); border-radius: 50%; display: inline-block; margin-right: 4px;"></div>
+                    Live EHR Sync
+                </div>
+            </div>
+
+            <div style="font-family: monospace; font-size: 1.05rem; opacity: 0.9; flex-shrink: 0;" id="sessionTimer">
+                00:00
+            </div>
+        </header>
+
+        <!-- Main Real-time Workspace -->
+        <div class="workspace">
+            
+            <!-- Video Column -->
+            <div class="video-panel">
+                <div class="video-container">
+                    <!-- Session Overlay Metrics -->
+                    <div class="session-metrics">
+                        <div class="metric"><i class="fas fa-shield-alt metric-good"></i> Encrypted</div>
+                        <div class="metric"><i class="fas fa-bolt metric-good"></i> <span id="pingCounter">245ms</span></div>
+                        <div class="metric"><i class="fas fa-microchip"></i> Model: Claude-3.5-Sonnet</div>
+                    </div>
+
+                    <!-- Remote/Patient Video -->
+                    <div class="video-main"></div>
+                    
+                    <!-- Local/Doctor Video (PIP) -->
+                    <div class="video-pip"></div>
+                </div>
+
+                <!-- Call Controls -->
+                <div class="video-controls">
+                    <button class="control-btn active" title="Microphone"><i class="fas fa-microphone"></i></button>
+                    <button class="control-btn active" title="Camera"><i class="fas fa-video"></i></button>
+                    <button class="control-btn" title="Share Screen"><i class="fas fa-desktop"></i></button>
+                    <button class="control-btn" title="Interpreter Settings"><i class="fas fa-sliders-h"></i></button>
+                    <button class="control-btn end-call" onclick="window.location.href='dashboard.html'"><i class="fas fa-phone-slash" style="margin-right: 8px;"></i> End Session</button>
+                </div>
+            </div>
+
+            <!-- Transcription Split Column -->
+            <div class="transcript-panel">
+                <div class="transcript-header">
+                    <div>
+                        <h3 style="font-size: 1rem; margin: 0; color: var(--secondary);">Live Transcript</h3>
+                        <span style="font-size: 0.75rem; color: var(--text-muted);">HIPAA Compliant Record (ID: 9X4V)</span>
+                    </div>
+                    <div class="lang-indicator">
+                        <span class="lang-flag">EN</span>
+                        <i class="fas fa-exchange-alt" style="color: var(--primary); font-size: 0.8rem;"></i>
+                        <span class="lang-flag" id="targetLangFlag">ES</span>
+                    </div>
+                </div>
+
+                <div class="transcript-body" id="chatContainer">
+                    <!-- Emergency Alert Placeholder -->
+                    <div class="emergency-alert" id="emergencyBanner">
+                        <i class="fas fa-exclamation-triangle emergency-icon"></i>
+                        <div>
+                            <strong style="color: var(--danger); font-size: 0.9rem; display: block;">Emergency Keywords Detected</strong>
+                            <p style="margin: 0; font-size: 0.8rem; color: #8e2b26;">Patient mentioned 'chest pain'. Recommend immediate evaluation.</p>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <span style="background: var(--bg-light); border: 1px solid var(--border); padding: 4px 12px; border-radius: var(--radius-pill); font-size: 0.75rem; color: var(--text-muted);">Translation Session Started</span>
+                    </div>
+
+                    <!-- Javascript will populate messages here -->
+                </div>
+
+                <div class="transcript-footer">
+                    <p style="font-size: 0.7rem; color: var(--text-muted); text-align: center; margin-bottom: 8px;"><i class="fas fa-info-circle"></i> Speak normally. The AI separates speakers automatically.</p>
+                    <form class="demo-input-area" id="demoChatForm" onsubmit="handleDemoSubmit(event)">
+                        <input type="text" id="demoInput" placeholder="Type to simulate speaking (Demo)..." autocomplete="off">
+                        <button type="button" class="sim-mic-btn" id="simMicBtn" title="Hold to simulate Voice">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- The Patient Web Link Notification Simulation -->
+    <div style="position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: white; padding: 15px 25px; border-radius: var(--radius-md); box-shadow: 0 10px 30px rgba(0,0,0,0.15); border-left: 4px solid var(--accent); display: flex; align-items: center; gap: 15px; z-index: 1000;" id="patientLinkNotification">
+        <i class="fas fa-mobile-alt" style="font-size: 1.5rem; color: var(--secondary);"></i>
+        <div>
+            <div style="font-weight: 600; font-size: 0.95rem;">Patient Link Sent via SMS</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">They can tap the link to join without an app.</div>
+        </div>
+        <button class="btn btn-outline" style="font-size: 0.8rem; padding: 4px 10px;" onclick="window.open(`patient_lobby.html?lang=${encodeURIComponent(new URLSearchParams(window.location.search).get('lang'))}`, '_blank')">
+            Open Patient View
+        </button>
+        <button class="close-modal" onclick="document.getElementById('patientLinkNotification').style.display='none'" style="margin-left: auto;">&times;</button>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Set up context
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const patientName = params.get('patient') || 'Maria Gonzalez';
+            let targetLang = params.get('lang') || 'Spanish';
+            
+            document.getElementById('headerPatientName').innerText = patientName;
+            
+            // Map languages to flags loosely
+            const langMap = {
+                'Spanish': 'ES',
+                'Mandarin': 'ZH',
+                'Arabic': 'AR',
+                'Hindi': 'HI',
+                'Russian': 'RU',
+                'Tagalog': 'TL'
+            };
+            
+            document.getElementById('targetLangFlag').innerText = langMap[targetLang] || targetLang.substring(0,2).toUpperCase();
+            
+            // Start Timer
+            let seconds = 0;
+            const timerEl = document.getElementById('sessionTimer');
+            setInterval(() => {
+                seconds++;
+                const mins = String(Math.floor(seconds / 60)).padStart(2, '0');
+                const secs = String(seconds % 60).padStart(2, '0');
+                timerEl.innerText = `${mins}:${secs}`;
+            }, 1000);
+            
+            // Fluctuate latency
+            const ping = document.getElementById('pingCounter');
+            setInterval(() => {
+                const val = Math.floor(Math.random() * 50) + 180;
+                ping.innerText = `${val}ms`;
+                if(val < 200) {
+                    ping.className = 'metric-good';
+                } else {
+                    ping.className = 'metric-warn';
+                }
+            }, 3000);
+            
+            // Append initial greeting from Doctor to simulate active call
+            setTimeout(() => {
+                addMessageToChat('doc', "Hello, I'm Dr. Chen. How are you feeling today?", targetLang, generateMockTranslation("Hello, I'm Dr. Chen. How are you feeling today?", targetLang));
+            }, 1500);
+
+            // Patient response delay
+            setTimeout(() => {
+                addMessageToChat('patient', generateMockResponse(targetLang), 'English', "I am still having a lot of chest pain when I breathe deeply.");
+            }, 5500);
+        });
+    </script>
+</body>
+</html>

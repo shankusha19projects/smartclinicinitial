@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - SmartClinics AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        .analytics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
+        .kpi-card { background: white; border-radius: var(--radius-md); padding: 1.5rem; border: 1px solid var(--border); box-shadow: 0 2px 10px rgba(0,0,0,0.03); position: relative; overflow: hidden; }
+        .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
+        .kpi-card.blue::before { background: var(--primary); } .kpi-card.green::before { background: var(--accent-decorative); } .kpi-card.yellow::before { background: #F1C40F; } .kpi-card.purple::before { background: #8e44ad; }
+        .kpi-value { font-size: 2rem; font-weight: 800; color: var(--secondary); line-height: 1.1; }
+        .kpi-label { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; margin-top: 4px; }
+        .kpi-change { font-size: 0.8rem; font-weight: 600; margin-top: 8px; }
+        .kpi-change.up { color: var(--accent); } .kpi-change.down { color: var(--danger); }
+        .charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+        .chart-card { background: white; border-radius: var(--radius-md); padding: 1.5rem; border: 1px solid var(--border); box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
+        .chart-card h3 { margin: 0 0 1.5rem 0; font-size: 1rem; color: var(--secondary); }
+        .lang-breakdown { display: flex; flex-direction: column; gap: 0.8rem; }
+        .lang-row { display: flex; align-items: center; gap: 0.8rem; }
+        .lang-row-label { width: 80px; font-size: 0.85rem; font-weight: 600; color: var(--secondary); }
+        .lang-bar-bg { flex: 1; height: 8px; background: var(--bg-light); border-radius: 4px; overflow: hidden; }
+        .lang-bar-fill { height: 100%; border-radius: 4px; }
+        .lang-pct { width: 40px; font-size: 0.8rem; font-weight: 700; text-align: right; }
+        .roi-card { background: linear-gradient(135deg, var(--secondary) 0%, #1a252f 100%); border-radius: var(--radius-md); padding: 2rem; color: white; }
+        .roi-stat { text-align: center; padding: 1rem; }
+        .roi-stat .val { font-size: 2.5rem; font-weight: 800; color: #2ecc71; }
+        .roi-stat .lbl { font-size: 0.85rem; color: rgba(255,255,255,0.7); margin-top: 4px; }
+        .date-filter { display: flex; gap: 0.5rem; }
+        .date-filter button { padding: 0.4rem 1rem; border-radius: var(--radius-pill); font-size: 0.8rem; font-weight: 600; border: 1px solid var(--border); background: white; cursor: pointer; }
+        .date-filter button.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .satisfaction-stars { display: flex; gap: 4px; color: var(--warning); font-size: 1.5rem; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="dashboard.html" class="sidebar-logo">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M40 20 H60 V40 H80 V60 H60 V80 H40 V60 H20 V40 H40 Z" fill="white" opacity="0.9"/><path d="M70 15 Q 90 15 90 35 Q 90 50 80 55 L 85 70 L 65 60 Q 55 65 40 65 Q 20 65 20 45 Q 20 25 40 25 M30 45 H80" fill="none" stroke="#2Ecc71" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="45" cy="45" r="4" fill="#2Ecc71"/><circle cx="65" cy="45" r="4" fill="#2Ecc71"/></svg>
+                    SmartClinics AI
+                </a>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li><a href="patients.html" class="nav-item"><i class="fas fa-users"></i> Patients</a></li>
+                    <li><a href="appointments.html" class="nav-item"><i class="far fa-calendar-alt"></i> Appointments</a></li>
+                    <li><a href="history.html" class="nav-item"><i class="fas fa-history"></i> Translation History</a></li>
+                    <li><a href="analytics.html" class="nav-item active"><i class="fas fa-chart-line"></i> Analytics</a></li>
+                </ul>
+                <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05);">
+                    <ul>
+                        <li><a href="settings.html" class="nav-item"><i class="fas fa-cog"></i> Settings</a></li>
+                        <li><a href="receptionist.html" class="nav-item"><i class="fas fa-headset"></i> Receptionist View</a></li>
+                    </ul>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <img src="https://images.unsplash.com/photo-1594824436998-d8ac09c316af?auto=format&fit=crop&q=80&w=150&h=150" alt="Dr. Sarah Chen" class="avatar">
+                    <div class="user-info">
+                        <span class="user-name">Dr. Sarah Chen</span>
+                        <span class="user-role">Cardiologist</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-wrapper">
+            <header class="top-header">
+                <button class="sidebar-toggle" aria-label="Toggle navigation">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search analytics...">
+                </div>
+                <div class="header-actions">
+                    <div class="date-filter">
+                        <button onclick="setRange('week', this)">7 Days</button>
+                        <button class="active" onclick="setRange('month', this)">30 Days</button>
+                        <button onclick="setRange('year', this)">Year</button>
+                    </div>
+                </div>
+            </header>
+
+            <div class="main-content">
+                <div class="page-title">
+                    <span>Analytics Dashboard</span>
+                    <button class="btn btn-outline" onclick="downloadReport()"><i class="fas fa-download"></i> Download Report</button>
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="analytics-grid">
+                    <div class="kpi-card blue">
+                        <div class="kpi-value">342</div>
+                        <div class="kpi-label">Total Translations</div>
+                        <div class="kpi-change up"><i class="fas fa-arrow-up"></i> +18% vs last month</div>
+                    </div>
+                    <div class="kpi-card green">
+                        <div class="kpi-value">98.2%</div>
+                        <div class="kpi-label">Average Accuracy</div>
+                        <div class="kpi-change up"><i class="fas fa-arrow-up"></i> +0.4%</div>
+                    </div>
+                    <div class="kpi-card yellow">
+                        <div class="kpi-value">143h</div>
+                        <div class="kpi-label">Interpreter Time Saved</div>
+                        <div class="kpi-change up"><i class="fas fa-arrow-up"></i> +22h this month</div>
+                    </div>
+                    <div class="kpi-card purple">
+                        <div class="kpi-value">$4,290</div>
+                        <div class="kpi-label">Cost Savings (30 days)</div>
+                        <div class="kpi-change up"><i class="fas fa-arrow-up"></i> vs traditional</div>
+                    </div>
+                </div>
+
+                <!-- Charts Row 1 -->
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3>Translation Volume (Last 30 Days)</h3>
+                        <canvas id="volumeChart" height="200"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Language Distribution</h3>
+                        <canvas id="langChart" height="200"></canvas>
+                    </div>
+                </div>
+
+                <!-- Charts Row 2 -->
+                <div class="charts-row-3" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;">
+                    <div class="chart-card">
+                        <h3>AI Model Usage</h3>
+                        <canvas id="modelChart" height="180"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Language Breakdown</h3>
+                        <div class="lang-breakdown" style="margin-top:0.5rem;">
+                            <div class="lang-row">
+                                <div class="lang-row-label">Spanish</div>
+                                <div class="lang-bar-bg"><div class="lang-bar-fill" style="width:48%;background:#e74c3c;"></div></div>
+                                <div class="lang-pct" style="color:#e74c3c">48%</div>
+                            </div>
+                            <div class="lang-row">
+                                <div class="lang-row-label">Mandarin</div>
+                                <div class="lang-bar-bg"><div class="lang-bar-fill" style="width:22%;background:#e67e22;"></div></div>
+                                <div class="lang-pct" style="color:#e67e22">22%</div>
+                            </div>
+                            <div class="lang-row">
+                                <div class="lang-row-label">Arabic</div>
+                                <div class="lang-bar-bg"><div class="lang-bar-fill" style="width:15%;background:#16a085;"></div></div>
+                                <div class="lang-pct" style="color:#16a085">15%</div>
+                            </div>
+                            <div class="lang-row">
+                                <div class="lang-row-label">Hindi</div>
+                                <div class="lang-bar-bg"><div class="lang-bar-fill" style="width:9%;background:#8e44ad;"></div></div>
+                                <div class="lang-pct" style="color:#8e44ad">9%</div>
+                            </div>
+                            <div class="lang-row">
+                                <div class="lang-row-label">Russian</div>
+                                <div class="lang-bar-bg"><div class="lang-bar-fill" style="width:6%;background:#2980b9;"></div></div>
+                                <div class="lang-pct" style="color:#2980b9">6%</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Patient Satisfaction</h3>
+                        <div style="text-align:center;padding:1rem 0;">
+                            <div style="font-size:4rem;font-weight:800;color:var(--secondary)">4.8</div>
+                            <div class="satisfaction-stars">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                            </div>
+                            <div style="font-size:0.85rem;color:var(--text-muted);margin-top:0.5rem">Based on 128 responses</div>
+                            <div style="margin-top:1rem;font-size:0.8rem;color:var(--text-muted)">
+                                <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span>5 ⭐</span><div style="flex:1;height:6px;background:var(--bg-light);border-radius:3px;margin:0 10px;overflow:hidden"><div style="height:100%;width:72%;background:#f39c12;border-radius:3px;"></div></div><span>72%</span></div>
+                                <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span>4 ⭐</span><div style="flex:1;height:6px;background:var(--bg-light);border-radius:3px;margin:0 10px;overflow:hidden"><div style="height:100%;width:20%;background:#f1c40f;border-radius:3px;"></div></div><span>20%</span></div>
+                                <div style="display:flex;justify-content:space-between"><span>3 ⭐</span><div style="flex:1;height:6px;background:var(--bg-light);border-radius:3px;margin:0 10px;overflow:hidden"><div style="height:100%;width:8%;background:#bdc3c7;border-radius:3px;"></div></div><span>8%</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ROI Banner -->
+                <div class="roi-card">
+                    <h3 style="color:white;text-align:center;margin-bottom:1.5rem;">ROI Summary — Last 30 Days</h3>
+                    <div class="roi-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;">
+                        <div class="roi-stat"><div class="val">$6,150</div><div class="lbl">Human interpreter cost (equivalent)</div></div>
+                        <div class="roi-stat"><div class="val">$199</div><div class="lbl">SmartClinics AI cost</div></div>
+                        <div class="roi-stat"><div class="val">$5,951</div><div class="lbl">Net savings</div></div>
+                        <div class="roi-stat"><div class="val">96.8%</div><div class="lbl">Cost reduction</div></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="sidebar-backdrop"></div>
+
+    <script src="app.js"></script>
+    <script>
+        // Volume Chart
+        const volumeCtx = document.getElementById('volumeChart').getContext('2d');
+        const labels = Array.from({length: 30}, (_, i) => { const d = new Date(2026, 3, 10 + i); return d.toLocaleDateString('en-US', {month:'short',day:'numeric'}); });
+        new Chart(volumeCtx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Translations',
+                    data: [8,10,7,12,15,9,11,14,10,8,13,16,11,9,12,15,10,13,17,12,11,14,16,10,12,11,14,16,18,12],
+                    borderColor: '#1558B0', backgroundColor: 'rgba(21,88,176,0.08)', tension: 0.4, fill: true, pointRadius: 2
+                }]
+            },
+            options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { ticks: { maxTicksLimit: 8, font: { size: 11 } } }, y: { beginAtZero: true, ticks: { font: { size: 11 } } } } }
+        });
+
+        // Language Donut
+        const langCtx = document.getElementById('langChart').getContext('2d');
+        new Chart(langCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Spanish', 'Mandarin', 'Arabic', 'Hindi', 'Russian', 'Other'],
+                datasets: [{ data: [48, 22, 15, 9, 6, 0], backgroundColor: ['#e74c3c','#e67e22','#16a085','#8e44ad','#2980b9','#95a5a6'], borderWidth: 2, borderColor: '#fff' }]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } } }
+        });
+
+        // Model Chart
+        const modelCtx = document.getElementById('modelChart').getContext('2d');
+        new Chart(modelCtx, {
+            type: 'bar',
+            data: {
+                labels: ['OpenAI', 'Gemini', 'Bedrock'],
+                datasets: [{ label: 'Sessions', data: [248, 62, 32], backgroundColor: ['#1558B0','#e67e22','#16a085'], borderRadius: 6 }]
+            },
+            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        });
+
+        function setRange(range, btn) {
+            document.querySelectorAll('.date-filter button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function downloadReport() {
+            alert('📥 Report downloaded as analytics_report_may2026.pdf (simulated)');
+        }
+    </script>
+</body>
+</html>
