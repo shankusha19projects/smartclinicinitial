@@ -1,51 +1,76 @@
 # Configuration Guide
 
-The current SmartClinics AI prototype does not require configuration to run locally. It is a static front-end demo.
+SmartClinics AI runs locally with no required environment variables.
 
-Production configuration is documented here so teams know what must be added before connecting the prototype to real services.
+## Local Defaults
 
-## Local Prototype Configuration
+| Setting | Default |
+|---|---|
+| Host | `localhost` |
+| Port | `3456` |
+| Database | `data/smarclinicai.db` |
+| Login user | `Shash` |
+| Login password | `12345` |
+| Tenant | `SmartClinic Local` |
 
-No `.env` file is required for the checked-in static demo.
+## Optional Local Port
 
-The app currently depends on public external assets:
+To run on another port:
+
+```powershell
+$env:PORT=4567
+python server.py
+```
+
+Open:
+
+```text
+http://localhost:4567/app/login.html
+```
+
+## Local Database
+
+The database is created automatically from:
+
+```text
+data/schema.sql
+```
+
+The runtime database file is:
+
+```text
+data/smarclinicai.db
+```
+
+This file is intentionally ignored by Git.
+
+## External Assets
+
+The app uses public CDNs for:
 
 - Google Fonts
 - Font Awesome
-- Chart.js where used by analytics screens
-- Unsplash images
+- Chart.js where used
+- Unsplash demo images
 
-If previewing offline, replace CDN references and remote images with local assets.
-
-## Query Parameters
-
-The translation and patient lobby screens use query string parameters:
-
-| Parameter | Example | Used By |
-|---|---|---|
-| `lang` | `Spanish` | Translation target language |
-| `patient` | `Maria Gonzalez` | Displayed patient context |
-
-Example:
-
-```text
-app/translator.html?lang=Spanish&patient=Maria%20Gonzalez
-```
+For offline demos, replace those references with local assets.
 
 ## Production Environment Variables
 
-Use backend environment variables for secrets. Do not place API keys in client-side HTML or JavaScript.
-
-Recommended production variables:
+When moving to production, configure secrets only on the backend:
 
 ```text
 APP_ENV=production
 APP_BASE_URL=https://app.example.com
 API_BASE_URL=https://api.example.com
+DATABASE_URL=
+SESSION_SECRET=
+ENCRYPTION_KEY=
 
 OPENAI_API_KEY=
 OPENAI_MODEL=
-GOOGLE_TRANSLATE_KEY=
+AZURE_OPENAI_ENDPOINT=
+AZURE_OPENAI_KEY=
 AWS_REGION=
 AWS_BEDROCK_MODEL_ID=
 
@@ -59,83 +84,22 @@ CERNER_CLIENT_SECRET=
 TWILIO_ACCOUNT_SID=
 TWILIO_AUTH_TOKEN=
 TWILIO_FROM_NUMBER=
-
-ZOOM_API_KEY=
-ZOOM_API_SECRET=
-ZOOM_SDK_KEY=
-ZOOM_SDK_SECRET=
-
-DATABASE_URL=
-REDIS_URL=
-SESSION_SECRET=
-ENCRYPTION_KEY=
-AUDIT_LOG_BUCKET=
 ```
 
-## Integration Setup
+## Integration Configuration
 
 ### AI Translation
 
-For a production translation service:
-
-1. Build a backend translation endpoint.
-2. Send text/audio transcripts from the browser to the backend.
-3. Call the selected AI provider from the backend only.
-4. Return translated text, confidence, language, model metadata, and safety flags.
-5. Log only approved audit metadata.
-
-See `Spec/04_api_integration_guide.md` for sample OpenAI and Google Translate patterns.
+The current local demo uses simulated translation. Production translation should be called from the backend only.
 
 ### EHR/FHIR
 
-Production EHR integration should use SMART on FHIR OAuth:
+Production EHR integration should use SMART on FHIR OAuth, minimum scopes, token encryption, and audit logging.
 
-1. Register the app with Epic, Cerner/Oracle Health, or another EHR vendor.
-2. Configure redirect URIs.
-3. Request the minimum required scopes.
-4. Store access tokens securely.
-5. Export translated summaries as FHIR resources only after user confirmation.
+### SMS
 
-### Twilio SMS
+Production SMS should send short-lived links and avoid PHI in message bodies.
 
-Use Twilio from a backend service:
+### Video
 
-1. Verify or purchase a sender number.
-2. Store credentials in backend environment variables.
-3. Generate short-lived patient session links.
-4. Avoid sending PHI in SMS body text.
-5. Log message delivery status without exposing message content unnecessarily.
-
-### Zoom Or WebRTC
-
-For video sessions:
-
-1. Use a HIPAA-eligible account and signed BAA when required.
-2. Generate meeting signatures from the backend.
-3. Disable recording unless explicit consent and retention controls are in place.
-4. Keep access links short-lived.
-
-## Client Configuration Pattern
-
-If the static app needs non-secret runtime settings, add a separate file such as:
-
-```javascript
-window.SMARTCLINICS_CONFIG = {
-  apiBaseUrl: "https://api.example.com",
-  environment: "production",
-  supportEmail: "support@example.com"
-};
-```
-
-Load it before app scripts. Never put private keys, OAuth secrets, database passwords, or signing keys in this client file.
-
-## Required Before Real Clinical Use
-
-- Backend API with authentication and authorization
-- Encrypted persistence where data must be stored
-- Audit logging
-- PHI minimization
-- Vendor BAAs
-- Translation quality validation
-- Incident response and disaster recovery plans
-- Accessibility and security testing
+Production video should use a HIPAA-eligible account and signed BAA where required.

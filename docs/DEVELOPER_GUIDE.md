@@ -1,129 +1,139 @@
 # Developer Guide
 
-This guide explains how the current prototype is organized and where to make changes.
+This guide explains how the current codebase works and how to extend it safely.
 
-## Technology Stack
+## Runtime Overview
 
-- HTML
-- CSS
-- JavaScript
-- Font Awesome icons via CDN
-- Google Fonts via CDN
-- Chart.js where used by analytics
-
-There is currently no package manager, bundler, build step, backend server, or database in this repository.
-
-## File Structure
+The app is a local Python-backed HTML/CSS/JavaScript application.
 
 ```text
-index.html                 Public product page
-app/styles.css             Shared portal styling
-app/app.js                 Shared translation simulation logic
-app/dashboard.html         Provider dashboard
-app/patients.html          Patient registry
-app/appointments.html      Appointment calendar/list
-app/translator.html        Active translation session
-app/patient_lobby.html     Patient-side session view
-app/history.html           Translation transcript history
-app/analytics.html         Usage analytics
-app/settings.html          Settings and integrations
-app/receptionist.html      Front desk workflow
-Spec/                      Product and technical specifications
-docs/                      GitHub-facing user and developer docs
+Browser
+  |
+  | HTTP on localhost:3456
+  v
+server.py
+  |
+  | sqlite3
+  v
+data/smarclinicai.db
 ```
+
+No build step is required.
+
+## Important Files
+
+| File | Purpose |
+|---|---|
+| `server.py` | Local backend, static file server, auth, API, SQLite access |
+| `data/schema.sql` | SQL schema for tenants, users, sessions, patients, appointments |
+| `app/login.html` | Local login screen |
+| `app/app.js` | Shared auth guard, API client, sidebar behavior, translation demo |
+| `app/styles.css` | Shared app styling and responsive behavior |
+| `app/dashboard.html` | Provider dashboard and session creation |
+| `app/patients.html` | Patient registry, filters, add patient modal |
+| `app/appointments.html` | Daily appointment workflow |
+| `app/translator.html` | Simulated translation session |
+| `app/settings.html` | Profile, tenant/team, settings, local-mode integrations |
 
 ## Running Locally
 
 ```powershell
-python -m http.server 8000
+python server.py
 ```
 
 Open:
 
 ```text
-http://localhost:8000
+http://localhost:3456/app/login.html
 ```
 
-## Main JavaScript Behavior
+## Seed Data
 
-`app/app.js` contains shared demo behavior for translation sessions:
+Database initialization happens automatically when `server.py` starts.
 
-- Mock translation dictionary
-- Simulated patient replies
-- Emergency keyword detection
-- Chat message rendering
-- Typing indicators
-- Latency simulation
+Seed tenant:
 
-Several HTML files also include page-specific inline JavaScript for demo data and UI behavior.
-
-## Adding A New Portal Page
-
-1. Create a new HTML file under `app/`.
-2. Link `styles.css`.
-3. Reuse the existing sidebar and top header pattern.
-4. Add the page to the sidebar navigation in each portal page if it should be globally reachable.
-5. Keep demo data local unless a shared module is introduced.
-6. Test at desktop and mobile widths.
-
-## Adding A New Language
-
-For the prototype:
-
-1. Add the language option in relevant selects.
-2. Add display colors where language color maps exist.
-3. Add mock translation responses in `app/app.js` if needed.
-4. Add sample patient or appointment records using the language.
-5. Verify filters, badges, and session routes.
-
-For production, language support should come from the backend translation provider and a centrally managed language registry.
-
-## Replacing Simulated Translation
-
-Do not call AI provider APIs directly from browser code. Instead:
-
-1. Add a backend endpoint such as `POST /api/translate`.
-2. Authenticate the user.
-3. Validate and sanitize input.
-4. Call the AI provider from the backend.
-5. Return translated text and metadata.
-6. Update `app/app.js` to call the backend endpoint.
-
-Suggested response shape:
-
-```json
-{
-  "sourceLanguage": "en",
-  "targetLanguage": "Spanish",
-  "sourceText": "Take this twice a day after meals.",
-  "translatedText": "Tome esto dos veces al dia despues de las comidas.",
-  "confidence": 0.98,
-  "model": "configured-model-name",
-  "safetyFlags": []
-}
+```text
+SmartClinic Local
 ```
 
-## Testing Checklist
+Seed user:
 
-- Landing page loads.
-- Navigation links work.
-- New session modal opens.
-- Translation session starts with query parameters.
-- Emergency phrase banner appears.
-- Patient registry filters work.
-- Appointment launch works.
-- History modal opens and export button behaves.
-- Analytics charts render.
-- Settings tabs switch correctly.
-- Receptionist queue actions work.
-- Mobile layout remains usable.
+```text
+Username: Shash
+Password: 12345
+Role: Admin
+```
 
-## Code Style
+Seed clinical demo data:
 
-- Keep CSS variables aligned with the existing design system.
-- Prefer accessible text contrast and semantic markup.
-- Keep demo data clearly separated from real integration code.
-- Avoid placing secrets or real PHI in the repository.
-- Use clear file names and direct links between portal pages.
+- 6 patients
+- 6 appointments
 
-For deeper architecture details, see `Spec/02_technical_architecture.md`.
+## API Endpoints
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/api/health` | Backend and database health |
+| `POST` | `/api/login` | Login with username/password |
+| `POST` | `/api/logout` | Clear current session |
+| `GET` | `/api/me` | Current user and tenant |
+| `GET` | `/api/bootstrap` | Current user, tenant, and counts |
+| `GET` | `/api/patients` | Tenant-scoped patient list |
+| `POST` | `/api/patients` | Create tenant-scoped patient |
+| `GET` | `/api/appointments?date=YYYY-MM-DD` | Tenant-scoped appointment list |
+| `POST` | `/api/appointments` | Create appointment |
+| `POST` | `/api/sessions/create` | Create translation session record |
+
+## Authentication Flow
+
+1. Login posts to `/api/login`.
+2. Backend verifies PBKDF2 password hash.
+3. Backend creates a random session token.
+4. Browser receives `scai_session` as an HttpOnly cookie.
+5. `app/app.js` calls `/api/me` on protected screens.
+6. Unauthenticated users are redirected to `/app/login.html`.
+
+## Multitenancy Pattern
+
+Every persisted clinical table includes `tenant_id`.
+
+The API never accepts `tenant_id` from the browser for clinical operations. It derives tenant scope from the authenticated session.
+
+When adding new tables:
+
+1. Include `tenant_id`.
+2. Add a foreign key to `tenants(id)`.
+3. Filter all reads and writes by the session tenant.
+4. Avoid exposing cross-tenant IDs in the UI.
+
+## Adding A New Backend Endpoint
+
+1. Add a route branch in `Handler.handle_api`.
+2. Call `require_session()` unless the endpoint is public.
+3. Read JSON with `self.json_body()`.
+4. Use parameterized SQL only.
+5. Return JSON with `self.send_json()`.
+6. Add local smoke checks before committing.
+
+## Validation Commands
+
+```powershell
+python -m py_compile server.py
+node --check app\app.js
+Invoke-RestMethod http://127.0.0.1:3456/api/health
+```
+
+## Production Notes
+
+Before real clinical use, replace local SQLite and simulated workflows with production-grade services:
+
+- Managed relational database
+- Strong password and MFA policy
+- Secrets manager
+- HTTPS everywhere
+- Centralized logging and auditing
+- HIPAA security review
+- Live AI translation provider integration
+- EHR/FHIR integration
+- SMS provider integration

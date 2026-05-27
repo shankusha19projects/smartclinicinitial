@@ -304,9 +304,16 @@
         });
 
         // Trigger session
-        function initiateSession() {
+        async function initiateSession() {
             const pName = document.getElementById('sessionPatientName').value || 'Guest Patient';
             const targetLang = document.getElementById('patientLang').value;
+            if (window.SmartClinicsAPI) {
+                try {
+                    await SmartClinicsAPI.createSession({ patient: pName, language: targetLang });
+                } catch (error) {
+                    if (error.status !== 401) console.warn('Could not persist translation session.', error);
+                }
+            }
             
             // In a real app we'd create a session ID on backend. We pass context via URL in this prototype.
             window.location.href = `translator.html?lang=${encodeURIComponent(targetLang)}&patient=${encodeURIComponent(pName)}`;

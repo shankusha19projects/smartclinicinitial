@@ -1,97 +1,98 @@
 # Troubleshooting Guide
 
-Use this guide when the local preview or GitHub-hosted version does not behave as expected.
+## Server Does Not Start
 
-## Page Opens But Looks Unstyled
-
-Check that the app is opened from the repository root and that relative paths resolve correctly.
-
-Preferred local preview:
+Run from the repository root:
 
 ```powershell
-python -m http.server 8000
+python server.py
 ```
 
-Then open:
+If port `3456` is busy:
+
+```powershell
+$env:PORT=4567
+python server.py
+```
+
+## Health Check Fails
+
+Open:
 
 ```text
-http://localhost:8000
+http://127.0.0.1:3456/api/health
 ```
 
-## Icons Or Fonts Do Not Load
-
-The prototype uses external CDNs. Confirm the browser has internet access and that the network does not block:
-
-- Google Fonts
-- Cloudflare CDN for Font Awesome
-- Chart.js CDN if analytics charts are used
-
-For offline demos, replace CDN links with local files.
-
-## Images Do Not Load
-
-Some images are loaded from Unsplash URLs. If images are blocked or unavailable, replace the remote URLs with files under `assets/` or another local asset folder.
-
-## Portal Links Return 404 On GitHub Pages
-
-Confirm GitHub Pages is publishing from:
+Expected:
 
 ```text
-branch: master
-folder: /root
+ok: true
+databaseName: smarclinicai
 ```
 
-Open routes with the repository path included if GitHub Pages is project-scoped:
+## Login Fails
+
+Use:
 
 ```text
-https://<user>.github.io/<repo>/app/dashboard.html
+Username: Shash
+Password: 12345
 ```
 
-## Translation Does Not Call Real APIs
+If data was modified, stop the server, delete `data/smarclinicai.db`, and restart.
 
-That is expected. The checked-in demo uses simulated translation in `app/app.js`. To connect real translation, add a backend API and update the browser code to call it.
+## App Redirects Back To Login
 
-## Changes Disappear After Refresh
-
-That is expected for many demo interactions. The prototype keeps most data in JavaScript memory and does not persist to a database.
-
-## Emergency Banner Does Not Appear
-
-Use a phrase that includes one of the configured trigger terms in English:
+The session cookie may be missing or expired. Sign in again at:
 
 ```text
-chest pain
-can't breathe
-heart attack
-suicide
-bleeding heavily
+http://localhost:3456/app/login.html
 ```
 
-The current trigger list lives in `app/app.js`.
+## Patients Or Appointments Are Empty
+
+Confirm the database seeded correctly:
+
+```powershell
+sqlite3 data\smarclinicai.db "SELECT COUNT(*) FROM patients; SELECT COUNT(*) FROM appointments;"
+```
+
+If needed, reset the database file.
+
+## Icons, Fonts, Or Images Do Not Load
+
+The demo uses public CDNs and Unsplash images. Confirm internet access or replace those assets with local files.
+
+## Translation Does Not Call Real AI
+
+That is expected. Translation is simulated in the local demo. Production should call an AI provider through the backend.
+
+## EHR, SMS, Or Video Buttons Do Not Perform Real Actions
+
+That is expected in local mode. Those integrations require production credentials, BAAs where required, secure secrets, and backend integration work.
 
 ## Git Shows Dubious Ownership
 
-On Windows, Git may warn that the repository is owned by another user. If you trust the folder, run:
+On Windows, Git may warn that the repository is owned by another user. If you trust the folder:
 
 ```powershell
 git config --global --add safe.directory "C:/Partitions1/Ateequr Projects Healthcare/SmartclinicAI"
 ```
 
-Or use Git's per-command safe directory override.
+Or use the existing per-command `safe.directory` override.
 
 ## GitHub Push Fails
 
 Check:
 
-- You are authenticated to GitHub.
-- The remote URL is correct.
-- The branch is `master`.
-- You have permission to push to the repository.
-
-Useful commands:
-
 ```powershell
 git status --short --branch
 git remote -v
 git branch --show-current
+```
+
+Make sure the remote is:
+
+```text
+https://github.com/shankusha19projects/smartclinicinitial.git
 ```

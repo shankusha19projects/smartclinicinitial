@@ -124,7 +124,7 @@
                     <div class="calendar-header">
                         <div class="calendar-nav">
                             <button onclick="changeDay(-1)"><i class="fas fa-chevron-left"></i></button>
-                            <h3 style="margin:0;font-size:1.1rem;" id="dayViewTitle">Thursday, May 9, 2026</h3>
+                            <h3 style="margin:0;font-size:1.1rem;" id="dayViewTitle">Today</h3>
                             <button onclick="changeDay(1)"><i class="fas fa-chevron-right"></i></button>
                         </div>
                         <button class="btn btn-outline" style="font-size:0.85rem;" onclick="goToToday()">Today</button>
@@ -162,7 +162,7 @@
                 <div class="card" style="margin-top:1.5rem;">
                     <div class="card-header">
                         <h3 class="card-title">Today's Patient Queue</h3>
-                        <span style="font-size:0.85rem;color:var(--text-muted);">May 9, 2026</span>
+                        <span style="font-size:0.85rem;color:var(--text-muted);" id="queueDateLabel">Today</span>
                     </div>
                     <div id="upcomingList"></div>
                 </div>
@@ -236,13 +236,14 @@
         </div>
     </div>
 
+    <script src="app.js"></script>
     <script>
-        const today = new Date(2026, 4, 9); // May 9, 2026
+        const today = new Date();
         let currentDay = new Date(today);
         let currentMonth = new Date(today);
         let currentWeek = new Date(today);
 
-        const appointments = [
+        let appointments = [
             { time: '7:30 AM', patient: 'Elena Rostova', lang: 'Russian', type: 'Asthma Followup', duration: 30, status: 'completed' },
             { time: '8:15 AM', patient: 'Amir Al-Fayed', lang: 'Arabic', type: 'Diabetes Mgmt', duration: 30, status: 'completed' },
             { time: '9:30 AM', patient: 'Maria Gonzalez', lang: 'Spanish', type: 'Post-op Followup', duration: 45, status: 'scheduled' },
@@ -279,6 +280,7 @@
 
         function renderUpcoming() {
             const list = document.getElementById('upcomingList');
+            document.getElementById('queueDateLabel').textContent = today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
             list.innerHTML = appointments.map(a => `
                 <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem;border-bottom:1px solid var(--bg-light);">
                     <div style="display:flex;align-items:center;gap:1rem;">
@@ -357,13 +359,44 @@
             setTimeout(() => modal.style.display = 'none', 300);
         }
 
-        function saveAppointment() {
+        async function loadAppointmentsFromBackend() {
+            if (!window.SmartClinicsAPI) return;
+            try {
+                const result = await SmartClinicsAPI.appointments(today.toISOString().split('T')[0]);
+                appointments = result.appointments;
+                renderDayView();
+                renderUpcoming();
+            } catch (error) {
+                if (error.status !== 401) console.warn('Appointment API unavailable, using demo data.', error);
+            }
+        }
+
+        async function saveAppointment() {
             const patient = document.getElementById('apptPatient').value;
             const time = document.getElementById('apptTime').value;
             const lang = document.getElementById('apptLang').value;
             const type = document.getElementById('apptType').value;
             if (!patient) { alert('Please enter a patient name.'); return; }
-            appointments.push({ time, patient, lang, type, duration: 30, status: 'scheduled' });
+            const payload = {
+                patient,
+                time,
+                lang,
+                type,
+                date: document.getElementById('apptDate').value || today.toISOString().split('T')[0],
+                duration: 30,
+                notes: document.getElementById('apptNotes').value
+            };
+            try {
+                if (window.SmartClinicsAPI) {
+                    const result = await SmartClinicsAPI.createAppointment(payload);
+                    appointments = result.appointments;
+                } else {
+                    appointments.push({ time, patient, lang, type, duration: 30, status: 'scheduled' });
+                }
+            } catch (error) {
+                alert(error.message || 'Unable to schedule appointment.');
+                return;
+            }
             closeApptModal();
             renderDayView();
             renderUpcoming();
@@ -375,6 +408,7 @@
         // Init
         renderDayView();
         renderUpcoming();
+        loadAppointmentsFromBackend();
     </script>
 </body>
 </html>

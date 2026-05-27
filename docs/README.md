@@ -1,35 +1,42 @@
-# Documentation Index
+# SmartClinics AI Documentation
 
-Use these guides to understand, run, configure, deploy, and extend SmartClinics AI.
+This folder contains the implementation and handoff documentation for the local multitenant SmartClinics AI demo.
 
-## Start Here
+## Primary Guides
 
-- [User Guide](USER_GUIDE.md): how each portal works and how to run the demo workflow.
-- [Configuration Guide](CONFIGURATION.md): local settings, production environment variables, and integration setup.
-- [Deployment Guide](DEPLOYMENT.md): static hosting, GitHub Pages, and production deployment path.
-- [Developer Guide](DEVELOPER_GUIDE.md): file structure, code conventions, testing, and extension points.
-- [Security and Compliance Guide](SECURITY_AND_COMPLIANCE.md): prototype limitations and production safeguards.
-- [Troubleshooting Guide](TROUBLESHOOTING.md): common local preview and GitHub Pages issues.
+- [Business Analyst Specs](BUSINESS_ANALYST_SPECS.md)
+- [Doctor Guide](DOCTOR_GUIDE.md)
+- [User Guide](USER_GUIDE.md)
+- [Developer Guide](DEVELOPER_GUIDE.md)
+- [Architect Guide](ARCHITECT_GUIDE.md)
+- [Tech Stack Guide](TECHSTACK_GUIDE.md)
+- [Installation Guide](INSTALLATION_GUIDE.md)
+- [AWS Migration Guide](AWS_DEPLOYMENT_GUIDE.md)
+- [Azure Migration Guide](AZURE_DEPLOYMENT_GUIDE.md)
+- [Configuration Guide](CONFIGURATION.md)
+- [Security and Compliance Guide](SECURITY_AND_COMPLIANCE.md)
+- [Troubleshooting Guide](TROUBLESHOOTING.md)
 
-## Full Specification Set
+## Current Demo Status
 
-The `Spec/` directory contains the detailed product and implementation references:
+SmartClinics AI now runs as a local authenticated demo with:
 
-- `Spec/01_product_requirements.md`
-- `Spec/02_technical_architecture.md`
-- `Spec/03_design_system.md`
-- `Spec/04_api_integration_guide.md`
-- `Spec/05_deployment_guide.md`
+- Tenant-scoped local backend
+- Seed tenant: `SmartClinic Local`
+- Seed user: `Shash`
+- Seed password: `12345`
+- Local SQL database: `data/smarclinicai.db`
+- Browser screens protected by session authentication
+- Patient and appointment persistence through local API endpoints
 
-## Current Prototype Status
+External healthcare integrations remain simulated:
 
-The checked-in app is a static, browser-based prototype. It simulates:
+- AI translation provider calls
+- EHR/FHIR writes
+- SMS delivery
+- Video meetings
+- Production billing
 
-- Real-time medical translation
-- Patient queue and receptionist handoff
-- Translation history
-- Analytics
-- EHR, SMS, and video integrations
-- Settings, billing, security, and team workflows
+## Source Specs
 
-It does not perform real API calls, store PHI, send SMS messages, join video meetings, or write to EHR systems.
+The `Spec/` directory contains earlier product and technical source material. The files in `docs/` are the current operational handoff guides for the locally runnable system.

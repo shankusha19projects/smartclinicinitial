@@ -405,24 +405,41 @@
             if (selectedPatientId) quickSession(selectedPatientId);
         }
 
-        function addNewPatient() {
+        async function loadPatientsFromBackend() {
+            if (!window.SmartClinicsAPI) return;
+            try {
+                const result = await SmartClinicsAPI.patients();
+                patients = result.patients.map(p => ({ ...p, visits: p.visits || [] }));
+                applyFilters();
+            } catch (error) {
+                if (error.status !== 401) console.warn('Patient API unavailable, using demo data.', error);
+            }
+        }
+
+        async function addNewPatient() {
             const firstName = document.getElementById('newFirstName').value.trim();
             const lastName = document.getElementById('newLastName').value.trim();
             if (!firstName || !lastName) { alert('Please enter first and last name.'); return; }
-            const newId = 'PT-' + (1000 + patients.length + 1);
             const newPatient = {
-                id: newId,
                 firstName, lastName,
                 dob: document.getElementById('newDOB').value || '1990-01-01',
                 language: document.getElementById('newLanguage').value,
                 phone: document.getElementById('newPhone').value,
                 email: document.getElementById('newEmail').value,
                 insurance: document.getElementById('newInsurance').value,
-                lastVisit: null, status: 'active',
-                notes: document.getElementById('newNotes').value,
-                visits: []
+                notes: document.getElementById('newNotes').value
             };
-            patients.unshift(newPatient);
+            try {
+                if (window.SmartClinicsAPI) {
+                    const result = await SmartClinicsAPI.createPatient(newPatient);
+                    patients = result.patients.map(p => ({ ...p, visits: p.visits || [] }));
+                } else {
+                    patients.unshift({ id: 'PT-' + (1000 + patients.length + 1), ...newPatient, lastVisit: null, status: 'active', visits: [] });
+                }
+            } catch (error) {
+                alert(error.message || 'Unable to save patient.');
+                return;
+            }
             closeModal('addPatientModal');
             applyFilters();
             // Clear form
@@ -457,6 +474,7 @@
 
         // Initial render
         renderPatients(patients);
+        loadPatientsFromBackend();
     </script>
 </body>
 </html>

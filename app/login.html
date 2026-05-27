@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - SmartClinics AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="login-page">
+    <main class="login-shell">
+        <section class="login-panel" aria-labelledby="loginTitle">
+            <a href="../index.html" class="login-logo">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M40 20 H60 V40 H80 V60 H60 V80 H40 V60 H20 V40 H40 Z" fill="currentColor" opacity="0.9"/>
+                    <path d="M70 15 Q 90 15 90 35 Q 90 50 80 55 L 85 70 L 65 60 Q 55 65 40 65 Q 20 65 20 45 Q 20 25 40 25 M30 45 H80" fill="none" stroke="#1A7035" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                SmartClinics AI
+            </a>
+            <div>
+                <h1 id="loginTitle">Local clinic login</h1>
+                <p>Sign in to access tenant-scoped clinic screens and local SQL data.</p>
+            </div>
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input class="form-control" id="username" name="username" autocomplete="username" value="Shash" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input class="form-control" id="password" name="password" type="password" autocomplete="current-password" value="12345" required>
+                </div>
+                <div id="loginError" class="login-error" role="alert"></div>
+                <button class="btn btn-primary login-submit" type="submit">
+                    <i class="fas fa-right-to-bracket"></i> Sign In
+                </button>
+            </form>
+        </section>
+    </main>
+    <script src="app.js"></script>
+</body>
+</html>

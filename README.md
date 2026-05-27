@@ -2,7 +2,7 @@
 
 SmartClinics AI is a production-ready prototype for real-time medical translation workflows in outpatient and virtual care settings. It demonstrates how providers, reception teams, and patients can use AI-assisted translation to reduce language barriers during appointments, intake, follow-up, and documentation.
 
-This repository is currently a static front-end prototype. It uses HTML, CSS, and JavaScript with simulated translation, patient, appointment, analytics, and integration behavior. No real patient data, live AI model calls, EHR writes, SMS delivery, or video meetings are performed by the checked-in demo.
+This repository now includes a local-only Python backend for authentication, tenant scoping, and SQL persistence. Translation, EHR, SMS, AI model calls, and video meetings remain simulated until production integrations are added.
 
 ## What Is Included
 
@@ -22,37 +22,33 @@ This repository is currently a static front-end prototype. It uses HTML, CSS, an
 
 ## Quick Start
 
-You can open the prototype directly in a browser:
-
-```text
-index.html
-```
-
-For the best local preview, run a small static web server from the project root:
+Run the local backend from the project root:
 
 ```powershell
-python -m http.server 8000
+python server.py
 ```
 
 Then open:
 
 ```text
-http://localhost:8000
+http://localhost:3456/app/login.html
 ```
 
-Useful demo routes:
+Seeded local login:
 
 ```text
-http://localhost:8000/app/dashboard.html
-http://localhost:8000/app/translator.html?lang=Spanish&patient=Demo+Patient
-http://localhost:8000/app/patient_lobby.html?lang=Spanish&patient=Demo+Patient
-http://localhost:8000/app/receptionist.html
+Username: Shash
+Password: 12345
+Tenant: SmartClinic Local
+Database: data/smarclinicai.db
 ```
+
+The app screens are protected by the local session cookie and redirect to login when unauthenticated.
 
 ## Demo Workflow
 
 1. Open `index.html` to review the product overview.
-2. Select a portal from the landing page or open `app/dashboard.html`.
+2. Sign in at `app/login.html`.
 3. Start a new translation session from the dashboard.
 4. Choose a patient name and target language.
 5. Use the active session screen to simulate translated provider and patient messages.
@@ -60,7 +56,9 @@ http://localhost:8000/app/receptionist.html
 
 ## Configuration Overview
 
-The current prototype is client-only and requires no environment variables to run locally. External assets are loaded from public CDNs for fonts, icons, images, and charts.
+The local backend requires no environment variables. External assets are loaded from public CDNs for fonts, icons, images, and charts.
+
+Local SQL discovery: this machine has a running MySQL service named `MySQLTest` on port `3306`, but root access without a password is denied. The current local backend therefore uses the SQLite SQL database `data/smarclinicai.db` until MySQL credentials are available.
 
 For production, the documented configuration includes:
 
@@ -76,10 +74,17 @@ See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) and [Spec/04_api_integration_
 ## Documentation
 
 - [Documentation Index](docs/README.md)
+- [Business Analyst Specs](docs/BUSINESS_ANALYST_SPECS.md)
+- [Doctor Guide](docs/DOCTOR_GUIDE.md)
 - [User Guide](docs/USER_GUIDE.md)
+- [Developer Guide](docs/DEVELOPER_GUIDE.md)
+- [Architect Guide](docs/ARCHITECT_GUIDE.md)
+- [Tech Stack Guide](docs/TECHSTACK_GUIDE.md)
+- [Installation Guide](docs/INSTALLATION_GUIDE.md)
+- [AWS Migration Guide](docs/AWS_DEPLOYMENT_GUIDE.md)
+- [Azure Migration Guide](docs/AZURE_DEPLOYMENT_GUIDE.md)
 - [Configuration Guide](docs/CONFIGURATION.md)
 - [Deployment Guide](docs/DEPLOYMENT.md)
-- [Developer Guide](docs/DEVELOPER_GUIDE.md)
 - [Security and Compliance Guide](docs/SECURITY_AND_COMPLIANCE.md)
 - [Troubleshooting Guide](docs/TROUBLESHOOTING.md)
 - [Full Product Specs](Spec/README.md)
@@ -93,7 +98,12 @@ This repository is a prototype and should not be used as-is for real patient car
 ```text
 .
 |-- index.html
+|-- server.py
+|-- data/
+|   |-- schema.sql
+|   `-- smarclinicai.db
 |-- app/
+|   |-- login.html
 |   |-- dashboard.html
 |   |-- patients.html
 |   |-- appointments.html

@@ -116,7 +116,8 @@
                                 <div class="avatar-upload">
                                     <img src="https://images.unsplash.com/photo-1594824436998-d8ac09c316af?auto=format&fit=crop&q=80&w=150&h=150" alt="Profile" class="avatar-preview">
                                     <div>
-                                        <button class="btn btn-outline" style="font-size:0.85rem;">Upload New Photo</button>
+                                        <button class="btn btn-outline" style="font-size:0.85rem;" onclick="document.getElementById('avatarFile').click()">Upload New Photo</button>
+                                        <input type="file" id="avatarFile" accept="image/png,image/jpeg" style="display:none" onchange="previewAvatar(this)">
                                         <div style="font-size:0.75rem;color:var(--text-muted);margin-top:6px">JPG, PNG. Max 2MB</div>
                                     </div>
                                 </div>
@@ -216,14 +217,14 @@
                                         <div class="integration-logo" style="background:#0079A6">Ce</div>
                                         <div><div style="font-weight:600">Cerner / Oracle Health</div><div style="font-size:0.8rem;color:var(--text-muted)">Not connected</div></div>
                                     </div>
-                                    <button class="btn btn-primary" style="font-size:0.8rem;padding:0.4rem 1rem;">Connect</button>
+                                    <button class="btn btn-primary" style="font-size:0.8rem;padding:0.4rem 1rem;" onclick="connectIntegration('Cerner / Oracle Health')">Connect</button>
                                 </div>
                                 <div class="integration-card">
                                     <div class="integration-info">
                                         <div class="integration-logo" style="background:#8C2633">at</div>
                                         <div><div style="font-weight:600">athenahealth</div><div style="font-size:0.8rem;color:var(--text-muted)">Not connected</div></div>
                                     </div>
-                                    <button class="btn btn-primary" style="font-size:0.8rem;padding:0.4rem 1rem;">Connect</button>
+                                    <button class="btn btn-primary" style="font-size:0.8rem;padding:0.4rem 1rem;" onclick="connectIntegration('athenahealth')">Connect</button>
                                 </div>
                             </div>
                             <div class="settings-section">
@@ -283,8 +284,8 @@
                                     </div>
                                 </div>
                                 <div style="margin-top:1rem;display:flex;gap:1rem;">
-                                    <button class="btn btn-outline">Change Plan</button>
-                                    <button class="btn btn-outline" style="color:var(--danger);border-color:var(--danger)">Cancel Subscription</button>
+                                    <button class="btn btn-outline" onclick="alert('Plan changes are disabled in local mode.')">Change Plan</button>
+                                    <button class="btn btn-outline" style="color:var(--danger);border-color:var(--danger)" onclick="alert('Subscription billing is disabled in local mode.')">Cancel Subscription</button>
                                 </div>
                             </div>
                             <div class="settings-section">
@@ -307,12 +308,7 @@
                                     <div><h3 style="margin:0">Team Members</h3><p class="desc" style="margin-bottom:0">Manage access for your clinic staff.</p></div>
                                     <button class="btn btn-primary" style="font-size:0.85rem;" onclick="inviteTeam()"><i class="fas fa-user-plus"></i> Invite</button>
                                 </div>
-                                <div id="teamList">
-                                    ${buildTeamMember('Dr. Sarah Chen', 'sarah.chen@clinic.ai', 'Admin', 'Active', 'https://images.unsplash.com/photo-1594824436998-d8ac09c316af?auto=format&fit=crop&q=80&w=60')}
-                                    ${buildTeamMember('Dr. James Washington', 'j.washington@clinic.ai', 'Provider', 'Active', 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=60')}
-                                    ${buildTeamMember('Maria Lopez', 'm.lopez@clinic.ai', 'Receptionist', 'Active', '')}
-                                    ${buildTeamMember('Alex Kim', 'a.kim@clinic.ai', 'Receptionist', 'Pending', '')}
-                                </div>
+                                <div id="teamList"></div>
                             </div>
                         </div>
                     </div>
@@ -369,6 +365,27 @@
             const email = prompt('Enter team member email address:');
             if (email) alert(`Invitation sent to ${email}`);
         }
+
+        function previewAvatar(input) {
+            const file = input.files && input.files[0];
+            if (!file) return;
+            if (file.size > 2 * 1024 * 1024) {
+                alert('Please choose an image smaller than 2MB.');
+                input.value = '';
+                return;
+            }
+            document.querySelector('.avatar-preview').src = URL.createObjectURL(file);
+        }
+
+        function connectIntegration(name) {
+            alert(`${name} connection wizard is disabled in local mode.`);
+        }
+
+        document.getElementById('teamList').innerHTML = [
+            buildTeamMember('Shash', 'shash@smartclinic.local', 'Admin', 'Active', ''),
+            buildTeamMember('Dr. Sarah Chen', 'sarah.chen@clinic.ai', 'Provider', 'Active', 'https://images.unsplash.com/photo-1594824436998-d8ac09c316af?auto=format&fit=crop&q=80&w=60'),
+            buildTeamMember('Maria Lopez', 'm.lopez@clinic.ai', 'Receptionist', 'Active', '')
+        ].join('');
     </script>
 </body>
 </html>

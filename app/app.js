@@ -1,8 +1,114 @@
-/* 
-    SmartClinics AI - App Logic Simulation
-    This file mocks up the real-time AI capabilities, translation latency, 
-    and emergency detection features for the prototype.
-*/
+/* SmartClinics AI - local app behavior, authentication, and demo translation. */
+
+const SmartClinicsAPI = {
+    async request(path, options = {}) {
+        const response = await fetch(path, {
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+            ...options
+        });
+        let payload = {};
+        try { payload = await response.json(); } catch (_) {}
+        if (!response.ok) {
+            const error = new Error(payload.error || 'Request failed');
+            error.status = response.status;
+            error.payload = payload;
+            throw error;
+        }
+        return payload;
+    },
+    me() { return this.request('/api/me'); },
+    login(username, password) {
+        return this.request('/api/login', { method: 'POST', body: JSON.stringify({ username, password }) });
+    },
+    logout() { return this.request('/api/logout', { method: 'POST', body: '{}' }); },
+    patients() { return this.request('/api/patients'); },
+    createPatient(patient) {
+        return this.request('/api/patients', { method: 'POST', body: JSON.stringify(patient) });
+    },
+    appointments(date) { return this.request(`/api/appointments?date=${encodeURIComponent(date)}`); },
+    createAppointment(appointment) {
+        return this.request('/api/appointments', { method: 'POST', body: JSON.stringify(appointment) });
+    },
+    createSession(session) {
+        return this.request('/api/sessions/create', { method: 'POST', body: JSON.stringify(session) });
+    }
+};
+
+window.SmartClinicsAPI = SmartClinicsAPI;
+window.smartClinicsAuth = null;
+
+function getLoginUrl() {
+    const next = window.location.pathname + window.location.search;
+    return `/app/login.html?next=${encodeURIComponent(next)}`;
+}
+
+function applyAuthContext(context) {
+    window.smartClinicsAuth = context;
+    const user = context.user || {};
+    const tenant = context.tenant || {};
+
+    document.querySelectorAll('.user-name').forEach(el => { el.textContent = user.fullName || user.username || 'User'; });
+    document.querySelectorAll('.user-role').forEach(el => { el.textContent = `${user.role || 'User'} - ${tenant.name || 'Tenant'}`; });
+
+    document.querySelectorAll('.sidebar-footer .user-profile').forEach(profile => {
+        if (!profile.querySelector('.logout-btn')) {
+            const button = document.createElement('button');
+            button.className = 'logout-btn';
+            button.title = 'Sign out';
+            button.innerHTML = '<i class="fas fa-right-from-bracket"></i>';
+            button.addEventListener('click', async () => {
+                try { await SmartClinicsAPI.logout(); } finally { window.location.href = '/app/login.html'; }
+            });
+            profile.appendChild(button);
+        }
+    });
+
+    document.querySelectorAll('.top-header .header-actions').forEach(actions => {
+        if (!actions.querySelector('.tenant-pill')) {
+            const pill = document.createElement('span');
+            pill.className = 'tenant-pill';
+            pill.innerHTML = `<i class="fas fa-building"></i> ${tenant.name || 'Local Tenant'}`;
+            actions.prepend(pill);
+        }
+    });
+}
+
+async function guardAppScreen() {
+    const path = window.location.pathname.toLowerCase();
+    if (!path.includes('/app/') || path.endsWith('/login.html')) return;
+    try {
+        const context = await SmartClinicsAPI.me();
+        applyAuthContext(context);
+    } catch (error) {
+        if (error.status === 401) window.location.href = getLoginUrl();
+    }
+}
+
+function setupLoginForm() {
+    const form = document.getElementById('loginForm');
+    if (!form) return;
+    const errorBox = document.getElementById('loginError');
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        errorBox.style.display = 'none';
+        const button = form.querySelector('button[type="submit"]');
+        const original = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Signing In';
+        try {
+            await SmartClinicsAPI.login(form.username.value.trim(), form.password.value);
+            const params = new URLSearchParams(window.location.search);
+            window.location.href = params.get('next') || '/app/dashboard.html';
+        } catch (error) {
+            errorBox.textContent = error.message || 'Unable to sign in.';
+            errorBox.style.display = 'block';
+        } finally {
+            button.disabled = false;
+            button.innerHTML = original;
+        }
+    });
+}
 
 // Dictionary to simulate translation for the demo
 const translationDictionary = {
@@ -226,8 +332,25 @@ if (simMicBtn) {
 
 // ── Mobile sidebar off-canvas toggle ──────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+    setupLoginForm();
+    guardAppScreen();
+
+    const header = document.querySelector('.top-header');
+    const sidebar = document.querySelector('.sidebar');
+    if (header && sidebar && !document.querySelector('.sidebar-toggle')) {
+        const button = document.createElement('button');
+        button.className = 'sidebar-toggle';
+        button.setAttribute('aria-label', 'Toggle navigation');
+        button.innerHTML = '<i class="fas fa-bars"></i>';
+        header.prepend(button);
+    }
+    if (sidebar && !document.querySelector('.sidebar-backdrop')) {
+        const backdropEl = document.createElement('div');
+        backdropEl.className = 'sidebar-backdrop';
+        document.body.appendChild(backdropEl);
+    }
+
     const toggleBtn = document.querySelector('.sidebar-toggle');
-    const sidebar   = document.querySelector('.sidebar');
     const backdrop  = document.querySelector('.sidebar-backdrop');
     if (!toggleBtn || !sidebar) return;
 
